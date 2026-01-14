@@ -73,11 +73,9 @@ const Dashboard = () => {
                 const parsedUser = JSON.parse(storedUser);
                 setUser(parsedUser);
 
-                // Fetch Dynamic Config
                 const res = await api.get('/config');
                 setConfig(res.data);
 
-                // Set CSS variable for body background or accents could go here
             } catch (err) {
                 console.error("Failed to load config", err);
             }

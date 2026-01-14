@@ -1,28 +1,88 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
-const tenantMiddleware = require('../middleware/tenantMiddleware');
-const User = require('../models/User');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+const Order = require('../models/Order');
 
-// Mock Upgrade to Premium
-router.post('/upgrade', authMiddleware, tenantMiddleware, async (req, res) => {
+// Initialize Razorpay
+// NOTE: We wrap this in a lazy initializer or just use process.env directly
+// to avoid errors if env vars aren't set yet during require time.
+const getRazorpayInstance = () => {
+    return new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+};
+
+// Create Order
+router.post('/create-order', async (req, res) => {
     try {
-        const { paymentMethod } = req.body; // 'stripe', 'razorpay', 'paypal'
+        const { amount, currency = 'INR', items } = req.body;
 
-        // Simulate payment processing
-        console.log(`Processing payment via ${paymentMethod} for user ${req.user.userId}`);
+        const options = {
+            amount: amount * 100, // amount in smallest currency unit (paise)
+            currency,
+            receipt: `receipt_${Date.now()}`
+        };
 
-        // Update user plan
-        // IMPORTANT: Note how we use tenantId in the query to enforce isolation!
-        const user = await User.findOneAndUpdate(
-            { _id: req.user.userId, tenantId: req.tenantId },
-            { plan: 'premium' },
-            { new: true }
-        );
+        const instance = getRazorpayInstance();
+        const razorpayOrder = await instance.orders.create(options);
 
-        res.json({ success: true, user });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        if (!razorpayOrder) {
+            return res.status(500).json({ error: 'Some error occurred' });
+        }
+
+        // Save initial order to DB
+        const newOrder = new Order({
+            items,
+            totalAmount: amount,
+            razorpayOrderId: razorpayOrder.id,
+            status: 'pending'
+        });
+        await newOrder.save();
+
+        res.json({
+            id: razorpayOrder.id,
+            currency: razorpayOrder.currency,
+            amount: razorpayOrder.amount,
+            orderId: newOrder._id
+        });
+
+    } catch (error) {
+        console.error('Create Order Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Verify Payment
+router.post('/verify-payment', async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
+
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+        const expectedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        if (expectedSignature === razorpay_signature) {
+            // Update order status
+            await Order.findOneAndUpdate(
+                { razorpayOrderId: razorpay_order_id },
+                {
+                    status: 'paid',
+                    razorpayPaymentId: razorpay_payment_id
+                }
+            );
+
+            res.json({ status: 'success', message: 'Payment verification successful' });
+        } else {
+            res.status(400).json({ status: 'failure', message: 'Invalid signature' });
+        }
+    } catch (error) {
+        console.error('Verify Error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
