@@ -1,7 +1,7 @@
 module.exports = {
     'ebook-saas': {
         theme: {
-            primary: '#ff5722', // Deep Orange
+            primary: '#ff5722',
             accent: '#ffeecb'
         },
         features: {
@@ -20,7 +20,7 @@ module.exports = {
     },
     'freelance-saas': {
         theme: {
-            primary: '#4caf50', // Green
+            primary: '#4caf50',
             accent: '#e8f5e9'
         },
         features: {
@@ -39,7 +39,7 @@ module.exports = {
     },
     'project-saas': {
         theme: {
-            primary: '#2196f3', // Blue
+            primary: '#2196f3',
             accent: '#e3f2fd'
         },
         features: {

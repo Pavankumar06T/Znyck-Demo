@@ -4,9 +4,6 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
 
-// Initialize Razorpay
-// NOTE: We wrap this in a lazy initializer or just use process.env directly
-// to avoid errors if env vars aren't set yet during require time.
 const getRazorpayInstance = () => {
     return new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
@@ -20,7 +17,7 @@ router.post('/create-order', async (req, res) => {
         const { amount, currency = 'INR', items } = req.body;
 
         const options = {
-            amount: amount * 100, // amount in smallest currency unit (paise)
+            amount: amount * 100,
             currency,
             receipt: `receipt_${Date.now()}`
         };
