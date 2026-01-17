@@ -23,7 +23,6 @@ exports.signup = async (req, res) => {
         }
 
         // Create Tenant
-        // Simple logic: slugify company name or use random ID
         const tenantId = companyName.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000);
         const preset = tenantPresets[saasType];
 
@@ -46,7 +45,7 @@ exports.signup = async (req, res) => {
             password: hashedPassword,
             tenantId: tenantId,
             saasType: saasType,
-            role: 'admin', // First user is admin
+            role: 'admin',
             plan: 'free'
         });
         await user.save();
