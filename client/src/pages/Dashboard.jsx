@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import StripeCheckoutModal from '../components/StripeCheckoutModal';
 
 const AiInsightCard = ({ topic, themeColor }) => (
     <div className="card" style={{ borderLeft: `5px solid ${themeColor}`, background: 'linear-gradient(to right, #f8fafc, white)' }}>
@@ -64,6 +65,7 @@ const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [config, setConfig] = useState(null);
     const navigate = useNavigate();
+    const [showStripeModal, setShowStripeModal] = useState(false);
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -90,7 +92,13 @@ const Dashboard = () => {
     };
 
     const handleUpgrade = async (paymentMethod) => {
+        if (paymentMethod === 'Stripe') {
+            setShowStripeModal(true);
+            return;
+        }
+
         try {
+            // Existing Razorpay or other flow
             const response = await api.post('/payments/upgrade', { paymentMethod });
             if (response.data.success) {
                 alert('Upgrade Successful!');
@@ -102,6 +110,13 @@ const Dashboard = () => {
             alert('Upgrade Failed');
         }
     };
+
+    const handleStripeSuccess = () => {
+        const updatedUser = { ...user, plan: 'premium' };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        alert('Upgrade Successful with Stripe!');
+    }
 
     if (!config || !user) return <div style={{ padding: '2rem' }}>Loading Workspace...</div>;
 
@@ -162,12 +177,22 @@ const Dashboard = () => {
                             <h4 style={{ color: config.theme.primary }}>Unlock Pro Power</h4>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Get unlimited exports and AI tools.</p>
                             <button onClick={() => handleUpgrade('Stripe')} style={{ background: config.theme.primary, width: '100%', marginTop: '1rem' }}>
-                                Upgrade Now
+                                Upgrade with Stripe
+                            </button>
+                            <button onClick={() => handleUpgrade('Razorpay')} style={{ background: 'transparent', color: config.theme.primary, border: `1px solid ${config.theme.primary}`, width: '100%', marginTop: '0.5rem' }}>
+                                Upgrade with Razorpay
                             </button>
                         </div>
                     )}
                 </div>
             </div>
+
+            <StripeCheckoutModal
+                isOpen={showStripeModal}
+                onClose={() => setShowStripeModal(false)}
+                amount={299} // Hardcoded for demo
+                onSuccess={handleStripeSuccess}
+            />
         </div>
     );
 };

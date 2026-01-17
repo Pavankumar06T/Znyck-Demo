@@ -33,6 +33,11 @@ export const createOrder = async (amount, items) => {
     return response.data;
 };
 
+export const createPaymentIntent = async (amount, items) => {
+    const response = await api.post('/payments/create-payment-intent', { amount, items });
+    return response.data;
+};
+
 export const verifyPayment = async (paymentData) => {
     const response = await api.post('/payments/verify-payment', paymentData);
     return response.data;

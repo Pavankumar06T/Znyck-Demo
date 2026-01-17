@@ -7,8 +7,14 @@ const orderSchema = new mongoose.Schema({
         quantity: { type: Number, default: 1 }
     }],
     totalAmount: { type: Number, required: true },
-    razorpayOrderId: { type: String, required: true },
+    razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
+    stripePaymentIntentId: { type: String },
+    paymentGateway: {
+        type: String,
+        enum: ['razorpay', 'stripe'],
+        required: true
+    },
     status: {
         type: String,
         enum: ['pending', 'paid', 'failed'],
