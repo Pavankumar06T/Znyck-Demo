@@ -101,18 +101,27 @@ const startServer = async () => {
             await seedApps(org._id);
             console.log('✨ Seed Complete: Created User, Org, and Apps');
         } else {
-            // Check for legacy demo app and remove it
+            // Check for legacy demo app and remove it (Clean up from previous runs)
             await Application.deleteOne({ name: 'Demo SaaS App' });
+
+            // Ensure Organization Exists
+            let org = await Organization.findOne();
+            if (!org) {
+                console.log('⚠️ No Organization found. Creating default Org...');
+                // Try to find a user to assign owner, or create one
+                let user = await User.findOne();
+                if (!user) {
+                    user = await User.create({ name: 'Demo Admin', email: 'admin@znyck.com', password: 'hashed_secret' });
+                }
+                org = await Organization.create({ name: 'Acme Corp (Demo)', owner: user._id, members: [{ user: user._id, role: 'admin' }] });
+            }
 
             // Check if our new apps exist
             const ebookApp = await Application.findOne({ name: 'Znyck E-Books' });
             if (!ebookApp) {
                 console.log('🌱 Seeding missing Demo Apps...');
-                const org = await Organization.findOne();
-                if (org) {
-                    await seedApps(org._id);
-                    console.log('✨ Seed Complete: Added E-Books, Freelance, and Gear Apps');
-                }
+                await seedApps(org._id);
+                console.log('✨ Seed Complete: Added E-Books, Freelance, and Gear Apps');
             }
         }
 
@@ -158,7 +167,12 @@ const startServer = async () => {
                 { name: "Ergonomic Mouse", description: "Vertical mouse for reduced strain.", price: 2500, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
                 { name: "Noise Cancelling Headphones", description: "Focus on your code in silence.", price: 18000, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
                 { name: "Laptop Stand", description: "Aluminum stand for better posture.", price: 1500, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Desk Mat", description: "Large extended gaming mouse pad.", price: 900, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1629904832560-6425979bb8c1?auto=format&fit=crop&q=80&w=800", organization: seedOrgId }
+                { name: "Desk Mat", description: "Large extended gaming mouse pad.", price: 900, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1629904832560-6425979bb8c1?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+
+                // USD Items for Stripe Testing
+                { name: "The Art of Code (USD)", description: "Global Edition (USD)", price: 4900, currency: "USD", category: "E-Book", image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Global Consultancy (USD)", description: "International Consultation", price: 20000, currency: "USD", category: "Freelance", image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Global Shipping Product (USD)", description: "Worldwide Shipping", price: 5000, currency: "USD", category: "Product", image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId }
             ];
 
             await Product.insertMany(productsToSeed);

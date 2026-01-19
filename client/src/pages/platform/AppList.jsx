@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Copy, Check, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Copy, Check, Eye, EyeOff, Loader2, ListOrdered } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AppCard = ({ app }) => {
+    const navigate = useNavigate();
     const [showSecret, setShowSecret] = useState(false);
 
     const copyToClipboard = (text) => {
@@ -47,6 +48,15 @@ const AppCard = ({ app }) => {
                         </button>
                         <button onClick={() => copyToClipboard(app.secretKey)} className="text-gray-500 hover:text-white">
                             <Copy size={14} />
+                        </button>
+                    </div>
+                    <div className="pt-4 border-t border-white/5 flex justify-end">
+                        <button
+                            onClick={() => navigate(`/dashboard/transactions?appId=${app._id}`)}
+                            className="text-xs text-blue-400 hover:text-white flex items-center gap-1 transition-colors"
+                        >
+                            <ListOrdered size={14} />
+                            View Transactions
                         </button>
                     </div>
                 </div>

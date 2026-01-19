@@ -30,7 +30,12 @@ class OrganizationController {
         try {
             // Assuming userId comes from some Auth Middleware for Dashboard Users
             const { userId } = req.query;
-            const orgs = await Organization.find({ 'members.user': userId });
+            let query = {};
+            if (userId && userId !== 'undefined') {
+                query = { 'members.user': userId };
+            }
+            // For Demo: If no userId, return all (or just return first found)
+            const orgs = await Organization.find(query);
             res.json(orgs);
         } catch (error) {
             res.status(500).json({ error: error.message });

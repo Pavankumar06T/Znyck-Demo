@@ -15,6 +15,10 @@ const transactionSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    // Breakdown
+    subtotal: Number,
+    tax: Number,
+    total: Number,
     currency: {
         type: String,
         required: true,

@@ -17,49 +17,64 @@ const loadRazorpayScript = () => {
 
 export const useCheckout = () => {
     const [loading, setLoading] = useState(false);
+    const [stripeConfig, setStripeConfig] = useState(null);
 
-    const handleCheckout = async (product, optionsOverride = {}) => {
+    const handleCheckout = async (product, optionsOverride = {}, preferredProvider = null) => {
         setLoading(true);
-        const isLoaded = await loadRazorpayScript();
-
-        if (!isLoaded) {
-            alert('Failed to load Razorpay SDK. Please check your internet connection.');
-            setLoading(false);
-            return;
-        }
+        setStripeConfig(null); // Reset
 
         try {
-            // Use the Demo Order endpoint
-            const orderData = await createDemoOrder(product);
+            // Use the Demo Order endpoint with preferred provider
+            const orderData = await createDemoOrder(product, preferredProvider);
+
+            // Handle Stripe
+            if (orderData.provider === 'stripe') {
+                if (!orderData.stripe?.clientSecret || !orderData.key) {
+                    alert('Stripe configuration missing from server response.');
+                    return;
+                }
+                setStripeConfig({
+                    key: orderData.key,
+                    clientSecret: orderData.stripe.clientSecret,
+                    productId: product._id // Store for verification
+                });
+                return; // Stop here, let the UI render the modal via stripeConfig
+            }
+
+            // Handle Razorpay
+            const isLoaded = await loadRazorpayScript();
+            if (!isLoaded) {
+                alert('Failed to load Razorpay SDK.');
+                setLoading(false);
+                return;
+            }
 
             const options = {
-                key: orderData.keyId || "rzp_test_RywhhwrgCMa4su", // Use key from backend or fallback
+                key: orderData.keyId || "rzp_test_RywhhwrgCMa4su",
                 amount: orderData.amount,
                 currency: orderData.currency,
                 name: orderData.product.name,
                 description: orderData.product.description || "Znyck Demo Transaction",
                 order_id: orderData.orderId,
                 handler: async function (response) {
+                    // ... Verification Logic (Same as before)
                     try {
                         const verifyData = {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
-                            productId: product._id, // Required for backend verification logic
-                            user: { email: 'guest@zonyck.demo', name: 'Guest User' }
+                            productId: product._id,
+                            user: { email: 'guest@znyck.demo', name: 'Guest User' }
                         };
                         const verifyRes = await verifyPayment(verifyData);
                         if (verifyRes.success || verifyRes.transactionId) {
                             alert('Payment Successful!');
                             if (optionsOverride.onSuccess) optionsOverride.onSuccess();
-                            // Optional: Redirect to transactions or stay
                             window.location.href = '/dashboard/transactions';
-                        } else {
-                            alert('Payment Verification Failed');
                         }
                     } catch (error) {
                         console.error(error);
-                        alert('Payment Verification Error');
+                        alert('Payment Verification Failed');
                     }
                 },
                 prefill: {
@@ -67,14 +82,13 @@ export const useCheckout = () => {
                     email: "guest@example.com",
                     contact: "9999999999"
                 },
-                theme: {
-                    color: "#2563eb"
-                },
+                theme: { color: "#2563eb" },
                 ...optionsOverride
             };
 
             const rzp = new window.Razorpay(options);
             rzp.open();
+
         } catch (error) {
             console.error("Payment initiation failed", error);
             alert("Payment initiation failed. See console.");
@@ -83,5 +97,5 @@ export const useCheckout = () => {
         }
     };
 
-    return { handleCheckout, loading };
+    return { handleCheckout, loading, stripeConfig, setStripeConfig };
 };
