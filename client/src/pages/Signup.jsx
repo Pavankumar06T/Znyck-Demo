@@ -8,6 +8,7 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [companyName, setCompanyName] = useState('');
+    const [role, setRole] = useState('admin'); // 'admin' (Merchant) or 'customer'
     const [saasType, setSaasType] = useState('ebook-saas');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -16,11 +17,11 @@ const Signup = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await api.post('/auth/signup', { email, password, companyName, saasType });
+            const response = await api.post('/auth/signup', { email, password, companyName, saasType, role });
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify({
                 tenantId: response.data.tenantId,
-                role: 'admin',
+                role: response.data.role,
                 plan: 'free',
                 saasType: response.data.saasType
             }));
@@ -106,22 +107,41 @@ const Signup = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400 ml-1">SaaS Platform Type</label>
+                            <label className="text-sm font-medium text-gray-400 ml-1">Account Type</label>
                             <div className="relative">
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                                     <ChevronDown size={20} className="text-gray-500" />
                                 </div>
                                 <select
-                                    value={saasType}
-                                    onChange={(e) => setSaasType(e.target.value)}
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
                                     className="w-full bg-black/50 border border-gray-800 rounded-xl py-3 pl-4 pr-10 text-white placeholder-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
                                 >
-                                    <option value="ebook-saas">WriterPro (Ebook SaaS)</option>
-                                    <option value="freelance-saas">DevHire (Freelance SaaS)</option>
-                                    <option value="project-saas">TaskFlow (Project SaaS)</option>
+                                    <option value="admin">Merchant (Sell Products)</option>
+                                    <option value="customer">Customer (Buy Products)</option>
                                 </select>
                             </div>
                         </div>
+
+                        {role === 'admin' && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-400 ml-1">SaaS Platform Type</label>
+                                <div className="relative">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <ChevronDown size={20} className="text-gray-500" />
+                                    </div>
+                                    <select
+                                        value={saasType}
+                                        onChange={(e) => setSaasType(e.target.value)}
+                                        className="w-full bg-black/50 border border-gray-800 rounded-xl py-3 pl-4 pr-10 text-white placeholder-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
+                                    >
+                                        <option value="ebook-saas">WriterPro (Ebook SaaS)</option>
+                                        <option value="freelance-saas">DevHire (Freelance SaaS)</option>
+                                        <option value="project-saas">TaskFlow (Project SaaS)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
 
                         <button
                             type="submit"

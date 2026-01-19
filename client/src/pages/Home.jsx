@@ -30,7 +30,7 @@ export default function Home() {
 
             {/* Hero */}
             <section className="pt-32 pb-20 px-6 max-w-7xl mx-auto text-center relative">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 blur-[120px] rounded-full pointing-events-none"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none"></div>
 
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -53,11 +53,11 @@ export default function Home() {
                     </p>
 
                     <div className="flex items-center justify-center space-x-4">
-                        <Link to="/dashboard" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-500 transition-all flex items-center space-x-2 shadow-lg shadow-blue-600/20">
+                        <Link to="/signup" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-500 transition-all flex items-center space-x-2 shadow-lg shadow-blue-600/20">
                             <span>Start now</span>
                             <ArrowRight size={20} />
                         </Link>
-                        <Link to="/mock-shop" className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center space-x-2">
+                        <Link to="/demo" className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center space-x-2">
                             <Terminal size={20} />
                             <span>View Demo</span>
                         </Link>

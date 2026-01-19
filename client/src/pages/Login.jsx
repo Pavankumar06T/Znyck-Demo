@@ -21,7 +21,11 @@ const Login = () => {
                 role: response.data.role,
                 plan: response.data.plan
             }));
-            navigate('/dashboard');
+            if (response.data.role === 'customer') {
+                navigate('/demo');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             alert(err.response?.data?.error || 'Login failed');
         } finally {
