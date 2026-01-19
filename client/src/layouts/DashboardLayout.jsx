@@ -25,6 +25,12 @@ export default function DashboardLayout() {
         email: 'admin@znyck.demo'
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/');
+    };
+
     return (
         <div className="flex h-screen bg-[#0f1117] text-white overflow-hidden">
             {/* Sidebar */}
@@ -43,13 +49,17 @@ export default function DashboardLayout() {
                         to="/dashboard"
                         active={location.pathname === '/dashboard'}
                     />
-                    <SidebarItem
-                        icon={Wallet}
-                        label="Transactions"
-                        to="/dashboard/transactions"
-                        active={location.pathname.startsWith('/dashboard/transactions')}
-                    />
                 </nav>
+
+                <div className="p-4 border-t border-white/10">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:text-red-400 hover:bg-white/5 w-full transition-colors"
+                    >
+                        <LogOut size={20} />
+                        <span className="font-medium">Sign Out</span>
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content */}

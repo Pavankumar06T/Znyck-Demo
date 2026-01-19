@@ -5,13 +5,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import DashboardLayout from './layouts/DashboardLayout';
 
 // Pages
+// Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ZnyckPay from './pages/ZnyckPay';
+import UserSpace from './pages/UserSpace';
 
 // Platform Pages
 import DashboardOverview from './pages/platform/DashboardOverview';
-import TransactionList from './pages/platform/TransactionList';
 import ProductList from './pages/platform/ProductList';
 import CategoryStore from './pages/platform/CategoryStore';
 
@@ -31,8 +33,10 @@ function App() {
     return (
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
-                {/* Redirect root to dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                {/* Landing Page */}
+                <Route path="/" element={<Home />} />
+                <Route path="/znyck-pay" element={<ZnyckPay />} />
+                <Route path="/user-space" element={<UserSpace />} />
 
                 {/* Public/Mock Routes */}
                 <Route path="/demo" element={<DemoStore />} />
@@ -43,7 +47,6 @@ function App() {
                 <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<DashboardOverview />} />
                     <Route path="products" element={<ProductList />} />
-                    <Route path="transactions" element={<TransactionList />} />
                     <Route path="store/:category" element={<CategoryStore />} />
                     <Route path="*" element={<Navigate to="/dashboard" />} />
                 </Route>

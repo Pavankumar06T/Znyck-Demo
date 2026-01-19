@@ -53,13 +53,9 @@ export default function Home() {
                     </p>
 
                     <div className="flex items-center justify-center space-x-4">
-                        <Link to="/signup" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-500 transition-all flex items-center space-x-2 shadow-lg shadow-blue-600/20">
-                            <span>Start now</span>
+                        <Link to="/znyck-pay" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-500 transition-all flex items-center space-x-2 shadow-lg shadow-blue-600/20">
+                            <span>Znyck Pay</span>
                             <ArrowRight size={20} />
-                        </Link>
-                        <Link to="/demo" className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center space-x-2">
-                            <Terminal size={20} />
-                            <span>View Demo</span>
                         </Link>
                     </div>
                 </motion.div>
@@ -75,7 +71,7 @@ export default function Home() {
                             </div>
                             <h3 className="text-xl font-bold mb-3">Global Reach</h3>
                             <p className="text-gray-400 leading-relaxed">
-                                Accept payments from 135+ countries. We handle the complex routing so you don't have to logic between Stripe and Razorpay.
+                                Accept payments from 135+ countries. We handle the complex routing so you don&apos;t have to logic between Stripe and Razorpay.
                             </p>
                         </div>
 

@@ -8,7 +8,7 @@ class AuthController {
     // POST /api/v1/auth/signup
     async signup(req, res) {
         try {
-            const { email, password, companyName, saasType, role } = req.body;
+            const { email, password, companyName, saasType, role, name, nickname, country, contact } = req.body;
 
             // 1. Check if user exists
             const existingUser = await User.findOne({ email });
@@ -21,7 +21,10 @@ class AuthController {
             const user = await User.create({
                 email,
                 password: hashedPassword,
-                name: email.split('@')[0], // Default name
+                name: name || email.split('@')[0], // Use provided name or default
+                nickname,
+                country,
+                contact
             });
 
             // 3. Create Tenant/Organization

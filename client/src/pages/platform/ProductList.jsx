@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { Plus, Search, Package, Loader2 } from 'lucide-react';
+import { Plus, Package, Loader2 } from 'lucide-react';
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
@@ -47,7 +47,8 @@ const ProductList = () => {
             setNewProduct({ name: '', description: '', price: '', currency: 'INR', category: 'E-Book', image: '' });
             fetchProducts();
         } catch (err) {
-            alert('Failed to add product');
+            console.error('Failed to add product', err);
+            // In a real app, use a toast notification here
         }
     };
 

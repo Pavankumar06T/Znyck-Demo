@@ -13,6 +13,9 @@ const userSchema = new mongoose.Schema({
         trim: true,
         lowercase: true
     },
+    nickname: { type: String, trim: true },
+    country: { type: String, trim: true },
+    contact: { type: String, trim: true },
     password: {
         type: String,
         required: true

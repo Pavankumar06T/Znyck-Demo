@@ -13,6 +13,10 @@ const Signup = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Get redirect param
+    const query = new URLSearchParams(window.location.search);
+    const redirectPath = query.get('redirect');
+
     const handleSignup = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -25,6 +29,12 @@ const Signup = () => {
                 plan: 'free',
                 saasType: response.data.saasType
             }));
+
+            if (redirectPath) {
+                navigate(redirectPath);
+                return;
+            }
+
             navigate('/dashboard');
         } catch (err) {
             alert(err.response?.data?.error || 'Signup failed');

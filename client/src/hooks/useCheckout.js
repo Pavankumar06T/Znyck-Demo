@@ -70,7 +70,7 @@ export const useCheckout = () => {
                         if (verifyRes.success || verifyRes.transactionId) {
                             alert('Payment Successful!');
                             if (optionsOverride.onSuccess) optionsOverride.onSuccess();
-                            window.location.href = '/dashboard/transactions';
+                            window.location.href = '/dashboard';
                         }
                     } catch (error) {
                         console.error(error);

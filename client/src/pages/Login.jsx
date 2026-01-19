@@ -10,6 +10,10 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Get redirect param
+    const query = new URLSearchParams(window.location.search);
+    const redirectPath = query.get('redirect');
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -21,6 +25,12 @@ const Login = () => {
                 role: response.data.role,
                 plan: response.data.plan
             }));
+
+            if (redirectPath) {
+                navigate(redirectPath);
+                return;
+            }
+
             if (response.data.role === 'customer') {
                 navigate('/demo');
             } else {
@@ -105,7 +115,7 @@ const Login = () => {
                 </div>
 
                 <p className="text-center mt-8 text-gray-500">
-                    Don't have an account? <Link to="/signup" className="text-white font-bold hover:underline">Sign up for free</Link>
+                    Don&apos;t have an account? <Link to="/signup" className="text-white font-bold hover:underline">Sign up for free</Link>
                 </p>
             </motion.div>
         </div>
