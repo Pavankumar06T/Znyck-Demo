@@ -73,18 +73,27 @@ const startServer = async () => {
             await seedApps(org._id);
             console.log('✨ Seed Complete: Created User, Org, and Apps');
         } else {
-            // Check for legacy demo app and remove it
+            // Check for legacy demo app and remove it (Clean up from previous runs)
             await Application.deleteOne({ name: 'Demo SaaS App' });
+
+            // Ensure Organization Exists
+            let org = await Organization.findOne();
+            if (!org) {
+                console.log('⚠️ No Organization found. Creating default Org...');
+                // Try to find a user to assign owner, or create one
+                let user = await User.findOne();
+                if (!user) {
+                    user = await User.create({ name: 'Demo Admin', email: 'admin@znyck.com', password: 'hashed_secret' });
+                }
+                org = await Organization.create({ name: 'Acme Corp (Demo)', owner: user._id, members: [{ user: user._id, role: 'admin' }] });
+            }
 
             // Check if our new apps exist
             const ebookApp = await Application.findOne({ name: 'Znyck E-Books' });
             if (!ebookApp) {
                 console.log('🌱 Seeding missing Demo Apps...');
-                const org = await Organization.findOne();
-                if (org) {
-                    await seedApps(org._id);
-                    console.log('✨ Seed Complete: Added E-Books, Freelance, and Gear Apps');
-                }
+                await seedApps(org._id);
+                console.log('✨ Seed Complete: Added E-Books, Freelance, and Gear Apps');
             }
         }
 

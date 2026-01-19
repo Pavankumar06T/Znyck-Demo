@@ -42,12 +42,12 @@ export default function DashboardLayout() {
                         to="/dashboard/apps"
                         active={location.pathname.startsWith('/dashboard/apps')}
                     /> */}
-                    <SidebarItem
+                    {/* <SidebarItem
                         icon={Wallet}
                         label="Transactions"
                         to="/dashboard/transactions"
                         active={location.pathname.startsWith('/dashboard/transactions')}
-                    />
+                    /> */}
                     {/* Mock Store Link - For quick access */}
                     {/* <SidebarItem
                         icon={ShoppingBag}
