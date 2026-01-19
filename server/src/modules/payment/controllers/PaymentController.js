@@ -9,7 +9,7 @@ class PaymentController {
     // POST /api/v1/payments/demo-order
     async createDemoOrder(req, res) {
         try {
-            const { productId, productDetails } = req.body;
+            const { productId, productDetails, preferredProvider } = req.body;
 
             let product = null;
             let isMock = false;
@@ -41,7 +41,10 @@ class PaymentController {
             // and use the Adapter to create the order on Razorpay.
 
             const PaymentFactory = require('../factories/PaymentFactory');
-            const adapter = PaymentFactory.getAdapter({ currency: product.currency });
+            const adapter = PaymentFactory.getAdapter({
+                currency: product.currency,
+                provider: preferredProvider
+            });
 
             // Create Order on Gateway
             const gatewayResponse = await adapter.createPayment({
@@ -55,17 +58,30 @@ class PaymentController {
             });
 
             // Return details to frontend to open checkout
-            res.json({
+            const responsePayload = {
                 success: true,
-                orderId: gatewayResponse.orderId, // Razorpay Order ID
                 amount: product.price,
                 currency: product.currency,
-                keyId: process.env.RAZORPAY_KEY_ID, // Send public key to frontend
+                provider: gatewayResponse.provider, // 'stripe' or 'razorpay'
                 product: {
                     name: product.name,
                     description: product.description
                 }
-            });
+            };
+
+            if (gatewayResponse.provider === 'stripe') {
+                responsePayload.key = process.env.STRIPE_PUBLISHABLE_KEY;
+                responsePayload.stripe = {
+                    clientSecret: gatewayResponse.clientSecret,
+                    paymentIntentId: gatewayResponse.gatewayId
+                };
+            } else {
+                // Default to Razorpay
+                responsePayload.keyId = process.env.RAZORPAY_KEY_ID;
+                responsePayload.orderId = gatewayResponse.orderId;
+            }
+
+            res.json(responsePayload);
 
         } catch (error) {
             console.error('Demo Order Error:', error);
@@ -84,6 +100,7 @@ class PaymentController {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
+                paymentIntentId, // Stripe
                 productId,
                 user // { name, email }
             } = req.body;
@@ -97,15 +114,29 @@ class PaymentController {
             // If mock or not found, we still verify signature but might skip loose relational linking
             const currency = 'INR'; // Default for demo if product unknown
 
-            const PaymentFactory = require('../factories/PaymentFactory');
-            const adapter = PaymentFactory.getAdapter({ currency: product ? product.currency : currency });
+            // Determine Provider based on input fields
+            const provider = paymentIntentId ? 'stripe' : 'razorpay';
 
-            // 1. Verify Signature
-            await adapter.verifyPayment({
-                orderId: razorpay_order_id,
-                paymentId: razorpay_payment_id,
-                signature: razorpay_signature
+            const PaymentFactory = require('../factories/PaymentFactory');
+            const adapter = PaymentFactory.getAdapter({
+                currency: product ? product.currency : currency,
+                provider: provider
             });
+
+            // 1. Verify Signature / Payment Status
+            if (provider === 'razorpay') {
+                await adapter.verifyPayment({
+                    orderId: razorpay_order_id,
+                    paymentId: razorpay_payment_id,
+                    signature: razorpay_signature
+                });
+            } else {
+                // Stripe Verification
+                const verification = await adapter.verifyPayment(paymentIntentId);
+                if (verification.status !== 'succeeded') {
+                    throw new Error(`Stripe Payment not succeeded: ${verification.status}`);
+                }
+            }
 
             // 2. Resolve Merchant Context from Product
             let merchantOrgId = null;
@@ -143,9 +174,9 @@ class PaymentController {
                     country: 'IN'
                 },
                 gateway: {
-                    provider: 'razorpay',
-                    transactionId: razorpay_order_id,
-                    paymentId: razorpay_payment_id
+                    provider: provider,
+                    transactionId: provider === 'razorpay' ? razorpay_order_id : paymentIntentId,
+                    paymentId: provider === 'razorpay' ? razorpay_payment_id : paymentIntentId
                 },
                 metadata: {
                     productName: product ? product.name : 'Unknown Product (Demo)',

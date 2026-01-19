@@ -34,11 +34,12 @@ export const createOrder = async (amount, items) => {
     return response.data;
 };
 
-export const createDemoOrder = async (product) => {
+export const createDemoOrder = async (product, preferredProvider = null) => {
     // We send productId and the full product details as fallback (in case it's a client-side mock)
     const response = await api.post('/payments/demo-order', {
         productId: product._id,
-        productDetails: product
+        productDetails: product,
+        preferredProvider
     });
     return response.data;
 };

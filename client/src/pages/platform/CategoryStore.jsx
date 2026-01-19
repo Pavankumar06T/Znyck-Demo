@@ -3,13 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 import api from '../../services/api';
 import { useCheckout } from '../../hooks/useCheckout';
+import StripePaymentModal from '../../components/StripePaymentModal';
+import PaymentMethodModal from '../../components/PaymentMethodModal';
 
 const CategoryStore = () => {
     const { category } = useParams();
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { handleCheckout, loading: checkoutLoading } = useCheckout();
+    const [selectedProduct, setSelectedProduct] = useState(null); // For Payment Method Selection
+    const { handleCheckout, loading: checkoutLoading, stripeConfig, setStripeConfig } = useCheckout();
 
     // Map URL param to friendly name
     const categoryName = category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Store';
@@ -107,16 +110,61 @@ const CategoryStore = () => {
                             <p className="text-sm text-gray-500 mb-6 flex-1">{product.description}</p>
 
                             <button
-                                onClick={() => handleCheckout(product)}
-                                disabled={checkoutLoading}
+                                onClick={() => setSelectedProduct(product)}
                                 className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
                             >
-                                {checkoutLoading ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
+                                <CreditCard size={18} />
                                 Buy Now
                             </button>
                         </div>
                     ))}
                 </div>
+            )}
+
+            {/* Payment Method Selection Modal */}
+            <PaymentMethodModal
+                isOpen={!!selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+                product={selectedProduct}
+                onSelect={(provider) => {
+                    // 1. Close Selection Modal
+                    const productToBuy = selectedProduct;
+                    setSelectedProduct(null);
+
+                    // 2. Trigger Checkout with Preference
+                    handleCheckout(productToBuy, {}, provider);
+                }}
+            />
+
+            {/* Checkout Loading Overlay (Global) */}
+            {checkoutLoading && (
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
+                    <div className="bg-[#1c1f2e] p-6 rounded-xl flex items-center gap-4">
+                        <Loader2 className="animate-spin text-blue-500" size={24} />
+                        <span className="text-white font-medium">Initializing Secure Payment...</span>
+                    </div>
+                </div>
+            )}
+
+            {stripeConfig && (
+                <StripePaymentModal
+                    isOpen={!!stripeConfig}
+                    config={stripeConfig}
+                    onClose={() => setStripeConfig(null)}
+                    onSuccess={async (paymentIntent) => {
+                        try {
+                            await api.post('/payments/verify-demo-order', {
+                                paymentIntentId: paymentIntent.id,
+                                productId: stripeConfig.productId,
+                                user: { email: 'guest@znyck.demo', name: 'Guest User' }
+                            });
+                            navigate('/dashboard/transactions');
+                        } catch (e) {
+                            console.error("Verification failed", e);
+                            alert("Payment succeeded but verification failed.");
+                        }
+                    }}
+                />
             )}
         </div>
     );

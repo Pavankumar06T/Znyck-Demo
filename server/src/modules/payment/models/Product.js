@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['E-Book', 'Freelance', 'Products']
+        enum: ['E-Book', 'Freelance', 'Product']
     },
     organization: {
         type: mongoose.Schema.Types.ObjectId,

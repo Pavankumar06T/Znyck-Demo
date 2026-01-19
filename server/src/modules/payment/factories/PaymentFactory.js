@@ -19,6 +19,21 @@ class PaymentFactory {
         // For Znyck Pay (Platform), we might use Platform keys or connected accounts.
         // For this prototype, we'll use environment variables for the "Platform's" accounts.
 
+        if (context.provider) {
+            console.log(`[PaymentFactory] Explicit provider requested: ${context.provider}`);
+            if (context.provider === 'razorpay') {
+                return new RazorpayAdapter({
+                    publicKey: process.env.RAZORPAY_KEY_ID,
+                    secretKey: process.env.RAZORPAY_KEY_SECRET
+                });
+            } else if (context.provider === 'stripe') {
+                return new StripeAdapter({
+                    publicKey: process.env.STRIPE_PUBLISHABLE_KEY,
+                    secretKey: process.env.STRIPE_SECRET_KEY
+                });
+            }
+        }
+
         if (currency && currency.toUpperCase() === 'INR') {
             const hasKey = !!process.env.RAZORPAY_KEY_ID;
             const hasSecret = !!process.env.RAZORPAY_KEY_SECRET;
