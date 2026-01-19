@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ShoppingBag, CreditCard, ShieldCheck, Globe, Code, Loader2, BookOpen, Briefcase, Monitor } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ShoppingBag, CreditCard, ShieldCheck, Globe, Code, Loader2, BookOpen, Briefcase, Monitor, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Stripe Imports
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // --- PRODUCTS DATA ---
 const PRODUCT_SETS = {
@@ -45,12 +49,77 @@ const amountFormatter = (amount, currency) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount / 100);
 };
 
+// -- HELPERS --
+const loadScript = (src) => {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
+
+// -- STRIPE COMPONENTS --
+const StripeCheckoutForm = ({ onSuccess, onLog }) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [message, setMessage] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!stripe || !elements) return;
+
+        setIsProcessing(true);
+        onLog('Processing Payment with Stripe...', 'info');
+
+        const { error, paymentIntent } = await stripe.confirmPayment({
+            elements,
+            redirect: 'if_required', // Avoid redirect for demo if possible
+            confirmParams: {
+                return_url: window.location.href, // Fallback if redirect is needed
+            },
+        });
+
+        if (error) {
+            setMessage(error.message);
+            onLog(`Stripe Error: ${error.message}`, 'error');
+            setIsProcessing(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+            onLog(`Stripe Payment Succeeded: ${paymentIntent.id}`, 'success');
+            onSuccess();
+        } else {
+            onLog(`Payment Status: ${paymentIntent?.status}`, 'info');
+            setIsProcessing(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <PaymentElement />
+            {message && <div className="text-red-500 text-sm">{message}</div>}
+            <button
+                disabled={isProcessing || !stripe || !elements}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold disabled:opacity-50 flex justify-center items-center"
+            >
+                {isProcessing ? <Loader2 className="animate-spin" /> : "Pay Now"}
+            </button>
+        </form>
+    );
+};
+
 export default function CheckoutDemo() {
     const { appId } = useParams();
     const [log, setLog] = useState([]);
     const [loading, setLoading] = useState(false);
     const [appContext, setAppContext] = useState(null);
     const [initError, setInitError] = useState(null);
+
+    // Stripe State
+    const [stripeOptions, setStripeOptions] = useState(null);
+    const [stripePromise, setStripePromise] = useState(null);
+    const [showStripeModal, setShowStripeModal] = useState(false);
 
     // Fetch App Context by ID
     useEffect(() => {
@@ -61,13 +130,6 @@ export default function CheckoutDemo() {
             }
 
             try {
-                // NOTE: In real world, we wouldn't fetch via list query, but by ID. 
-                // Since we don't have GetAppById Public endpoint yet, we simulate fetching org apps and finding it, 
-                // OR we fix the backend to allowing getting public app info by ID. 
-                // For hackathon speed, we'll fetch all apps of the first org found and match ID (hacky but works if only 1 org).
-
-                // Better: Let's assume we can fetch App Config if we had a dedicated endpoint. 
-                // Fallback: We fetch orgs -> apps -> find by ID.
                 const orgRes = await fetch('http://localhost:5000/api/v1/orgs');
                 const orgs = await orgRes.json();
                 if (orgs.length > 0) {
@@ -130,16 +192,74 @@ export default function CheckoutDemo() {
             const order = await res.json();
 
             addLog(`Order Created: ${order.orderId}`, 'success');
-            addLog(`Routing Strategy: ${order.provider}`, 'success');
+            addLog(`Tax Logic: +${order.currency} ${order.tax / 100} (${order.currency === 'INR' ? '18% GST' : '10% Tax'})`, 'info');
+            addLog(`Total Charged: ${order.currency} ${order.total / 100}`, 'success');
+            addLog(`Provider Selected: ${order.provider.toUpperCase()}`, 'info');
 
-            await new Promise(r => setTimeout(r, 1200));
-            addLog(`Payment Capture Successful`, 'success');
+            if (order.provider === 'razorpay') {
+                handleRazorpay(order);
+            } else if (order.provider === 'stripe') {
+                handleStripe(order);
+            }
 
         } catch (err) {
             addLog(`Error: ${err.message}`, 'error');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRazorpay = async (order) => {
+        addLog('Launching Razorpay Modal...', 'info');
+        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+
+        if (!res) {
+            addLog("Razorpay SDK failed to load", 'error');
+            return;
+        }
+
+        const options = {
+            key: order.key,
+            amount: order.total,
+            currency: order.currency,
+            name: appContext.name,
+            description: `Payment for Order ${order.orderId}`,
+            order_id: order.razorpay.orderId,
+            handler: function (response) {
+                addLog(`Razorpay Payment Successful: ${response.razorpay_payment_id}`, 'success');
+            },
+            prefill: {
+                name: "Demo Customer",
+                email: "customer@znyck.com",
+                contact: "9999999999"
+            },
+            theme: {
+                color: "#3399cc"
+            }
+        };
+
+        const rzp1 = new window.Razorpay(options);
+        rzp1.open();
+    };
+
+    const handleStripe = async (order) => {
+        if (!order.stripe?.clientSecret || !order.key) {
+            addLog("Missing Stripe Config", 'error');
+            return;
+        }
+
+        addLog('Initializing Stripe Elements...', 'info');
+
+        // Initialize Stripe with the Key from Backend
+        const stripe = await loadStripe(order.key);
+        setStripePromise(stripe);
+
+        setStripeOptions({
+            clientSecret: order.stripe.clientSecret,
+            appearance: { theme: 'stripe' },
+        });
+
+        setShowStripeModal(true);
     };
 
     if (initError) {
@@ -161,6 +281,45 @@ export default function CheckoutDemo() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
+            {/* --- STRIPE MODAL --- */}
+            <AnimatePresence>
+                {showStripeModal && stripeOptions && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative"
+                        >
+                            <button
+                                onClick={() => setShowStripeModal(false)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            >
+                                <X size={20} />
+                            </button>
+                            <div className="mb-6">
+                                <h3 className="text-xl font-bold text-gray-900">Secure Payment</h3>
+                                <p className="text-sm text-gray-500">Powered by Stripe</p>
+                            </div>
+
+                            <Elements stripe={stripePromise} options={stripeOptions}>
+                                <StripeCheckoutForm
+                                    onSuccess={() => {
+                                        setShowStripeModal(false);
+                                        addLog("Stripe Payment verified successfully!", 'success');
+                                    }}
+                                    onLog={addLog}
+                                />
+                            </Elements>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="flex-1 p-12 overflow-y-auto">
                 <header className="flex justify-between items-center mb-12">
                     <div className="flex items-center space-x-2 text-gray-900">

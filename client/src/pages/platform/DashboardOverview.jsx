@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, ExternalLink, Activity, Wallet, ArrowRight, Loader2 } from 'lucide-react';
+import { Plus, ExternalLink, Activity, Wallet, ArrowRight, Loader2, Copy, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const AppCard = ({ app }) => {
     const navigate = useNavigate();
+    const [showSecret, setShowSecret] = useState(false);
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        // Optional: Add toast notification Logic here
+    };
 
     return (
         <div className="bg-[#1c1f2e] border border-white/5 rounded-xl p-6 hover:border-blue-500/30 transition-all group flex flex-col h-full">
@@ -20,9 +26,32 @@ const AppCard = ({ app }) => {
             </div>
 
             <h3 className="text-xl font-bold text-white mb-1">{app.name}</h3>
-            <p className="text-sm text-gray-500 mb-6 flex-1">
-                {app._id}
+            <p className="text-sm text-gray-500 mb-4 font-mono text-xs opacity-60">
+                ID: {app._id}
             </p>
+
+            {/* Keys Section */}
+            <div className="space-y-3 mb-6 bg-black/20 p-3 rounded-lg border border-white/5">
+                <div>
+                    <label className="text-[10px] uppercase tracking-wider text-gray-500 block mb-1">Public Key</label>
+                    <div className="flex items-center space-x-2">
+                        <code className="text-xs text-blue-300 font-mono truncate flex-1">{app.publicKey}</code>
+                        <button onClick={() => copyToClipboard(app.publicKey)} className="text-gray-500 hover:text-white transition-colors" title="Copy Public Key"><Copy size={12} /></button>
+                    </div>
+                </div>
+                <div>
+                    <label className="text-[10px] uppercase tracking-wider text-gray-500 block mb-1">Secret Key</label>
+                    <div className="flex items-center space-x-2">
+                        <code className="text-xs text-purple-300 font-mono truncate flex-1 block">
+                            {showSecret ? app.secretKey : 'sk_••••••••••••••••••••••••'}
+                        </code>
+                        <button onClick={() => setShowSecret(!showSecret)} className="text-gray-500 hover:text-white transition-colors" title="Toggle Visibility">
+                            {showSecret ? <EyeOff size={12} /> : <Eye size={12} />}
+                        </button>
+                        <button onClick={() => copyToClipboard(app.secretKey)} className="text-gray-500 hover:text-white transition-colors" title="Copy Secret Key"><Copy size={12} /></button>
+                    </div>
+                </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-3 mt-auto">
                 <button
