@@ -21,24 +21,52 @@ app.use(express.json());
 
 app.get('/', (req, res) => res.send('Znyck Pay API Running 🚀'));
 
+const ProductController = require('./modules/payment/controllers/ProductController');
+const AuthController = require('./modules/core/controllers/AuthController');
+console.log('AuthController loaded:', AuthController);
+console.log('AuthController proto:', Object.getPrototypeOf(AuthController));
+console.log('AuthController.login type:', typeof AuthController.login);
+
+// Auth Routes - Registered directly to ensure precedence
+app.post('/api/v1/auth/signup', AuthController.signup);
+app.post('/api/v1/auth/login', AuthController.login);
+
 // 1. Management API (For Dashboard)
 // In a real app, this would be protected by User Auth (JWT)
 const apiRouter = express.Router();
+apiRouter.use((req, res, next) => {
+    console.log(`[API Router] Checking: ${req.method} ${req.path}`);
+    next();
+});
+
+// Auth Routes
+apiRouter.post('/auth/signup', AuthController.signup);
+apiRouter.post('/auth/login', AuthController.login);
+
 apiRouter.post('/orgs', OrganizationController.createOrg);
 apiRouter.get('/orgs', OrganizationController.listOrgs);
 apiRouter.post('/apps', ApplicationController.createApp);
 apiRouter.get('/apps', ApplicationController.listApps);
 apiRouter.get('/transactions', PaymentController.listTransactions);
 
+// Product Management
+apiRouter.post('/products', ProductController.createProduct);
+apiRouter.get('/products', ProductController.listProducts);
+
+// Demo Payment Route (Public for this demo)
+// Demo Payment Route (Public for this demo)
+apiRouter.post('/payments/demo-order', PaymentController.createDemoOrder);
+apiRouter.post('/payments/verify-demo-order', PaymentController.verifyDemoOrder);
+
 app.use('/api/v1', apiRouter);
 
 // 2. Payment API (For Client Apps / SDKs)
 // Protected by API Key ('x-api-key' header)
 const paymentRouter = express.Router();
-paymentRouter.use(authenticateApp);
+// paymentRouter.use(authenticateApp); // Access control moved to specific routes
 
-paymentRouter.post('/orders', PaymentController.createOrder);
-paymentRouter.get('/orders/:id', PaymentController.getOrder);
+paymentRouter.post('/orders', authenticateApp, PaymentController.createOrder);
+paymentRouter.get('/orders/:id', authenticateApp, PaymentController.getOrder);
 
 app.use('/api/v1', paymentRouter);
 
@@ -87,6 +115,58 @@ const startServer = async () => {
                 }
             }
         }
+
+        // --- SEED PRODUCTS ---
+        const Product = require('./modules/payment/models/Product');
+
+        // Always re-seed for this demo to ensure we have the correct data
+        try {
+            await Product.deleteMany({});
+            console.log('🧹 Cleared existing products for re-seeding');
+        } catch (e) {
+            console.log('⚠️ Could not clear products', e);
+        }
+
+        console.log('🌱 Seeding Products...');
+        // Find the Demo Admin Org
+        const demoAdmin = await User.findOne({ email: 'admin@znyck.com' });
+        let seedOrgId = null;
+        if (demoAdmin) {
+            const demoOrg = await Organization.findOne({ owner: demoAdmin._id });
+            if (demoOrg) seedOrgId = demoOrg._id;
+        }
+
+        // If we found the demo org, seed products for it
+        if (seedOrgId) {
+            const productsToSeed = [
+                // E-Book Category (5 Items)
+                { name: "The Art of Code", description: "A comprehensive guide to clean code principles.", price: 2900, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Advanced React Patterns", description: "Master modern React architecture.", price: 4900, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "System Design Interview", description: "Crack the system design interview.", price: 3500, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "The Pragmatic Programmer", description: "From journeyman to master.", price: 4200, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Microservices Patterns", description: "With examples in Java.", price: 5500, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+
+                // Freelance Category (5 Items)
+                { name: "Full Stack Consultancy", description: "1-hour consultation session for your project.", price: 15000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "UI/UX Design Review", description: "Expert review of your application design.", price: 9900, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Code Review Session", description: "In-depth code analysis and feedback.", price: 8000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Mentorship Call", description: "30-minute career guidance call.", price: 5000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Database Optimization", description: "Performance tuning for your database.", price: 12000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1504384308090-c54be3855833?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+
+                // Product Category (5 Items) - Note: Category name is 'Product' (Singular) to match frontend
+                { name: "Developer Mechanical Keycaps", description: "Set of 12 custom keycaps for coding.", price: 1200, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Ergonomic Mouse", description: "Vertical mouse for reduced strain.", price: 2500, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Noise Cancelling Headphones", description: "Focus on your code in silence.", price: 18000, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Laptop Stand", description: "Aluminum stand for better posture.", price: 1500, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
+                { name: "Desk Mat", description: "Large extended gaming mouse pad.", price: 900, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1629904832560-6425979bb8c1?auto=format&fit=crop&q=80&w=800", organization: seedOrgId }
+            ];
+
+            await Product.insertMany(productsToSeed);
+            console.log('✨ Seed Complete: Added 15 Default Products (5 per category)');
+        } else {
+            console.log('⚠️ Skipping Product Seed: Demo Admin Org not found');
+        }
+
 
         async function seedApps(orgId) {
             const apps = [

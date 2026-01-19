@@ -2,6 +2,7 @@ const Application = require('../modules/app/models/Application');
 
 const authenticateApp = async (req, res, next) => {
     try {
+        console.log(`[AuthMiddleware] Hit by: ${req.method} ${req.path}`);
         const apiKey = req.headers['x-api-key'];
 
         if (!apiKey) {

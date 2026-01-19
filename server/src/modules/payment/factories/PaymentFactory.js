@@ -20,6 +20,10 @@ class PaymentFactory {
         // For this prototype, we'll use environment variables for the "Platform's" accounts.
 
         if (currency && currency.toUpperCase() === 'INR') {
+            const hasKey = !!process.env.RAZORPAY_KEY_ID;
+            const hasSecret = !!process.env.RAZORPAY_KEY_SECRET;
+            console.log(`[PaymentFactory] Using Razorpay. Keys present: ID=${hasKey}, Secret=${hasSecret}`);
+
             return new RazorpayAdapter({
                 publicKey: process.env.RAZORPAY_KEY_ID,
                 secretKey: process.env.RAZORPAY_KEY_SECRET

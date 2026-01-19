@@ -20,6 +20,15 @@ const organizationSchema = new mongoose.Schema({
         trim: true,
         lowercase: true
     },
+    billing_email: {
+        type: String,
+        trim: true,
+        lowercase: true
+    },
+    settings: {
+        saasType: { type: String, default: 'generic' },
+        theme: { type: String, default: 'digital' }
+    },
     createdAt: {
         type: Date,
         default: Date.now

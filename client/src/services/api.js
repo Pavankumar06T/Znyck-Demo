@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5000/api/v1';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -29,17 +29,22 @@ export const fetchProductById = async (id) => {
 };
 
 export const createOrder = async (amount, items) => {
-    const response = await api.post('/payments/create-order', { amount, items });
+    // Legacy/Unused in this demo flow, keeping for reference or if needed
+    const response = await api.post('/orders', { amount, items });
     return response.data;
 };
 
-export const createPaymentIntent = async (amount, items) => {
-    const response = await api.post('/payments/create-payment-intent', { amount, items });
+export const createDemoOrder = async (product) => {
+    // We send productId and the full product details as fallback (in case it's a client-side mock)
+    const response = await api.post('/payments/demo-order', {
+        productId: product._id,
+        productDetails: product
+    });
     return response.data;
 };
 
 export const verifyPayment = async (paymentData) => {
-    const response = await api.post('/payments/verify-payment', paymentData);
+    const response = await api.post('/payments/verify-demo-order', paymentData);
     return response.data;
 };
 

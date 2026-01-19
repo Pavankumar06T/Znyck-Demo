@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { createOrder, verifyPayment } from '../services/api';
+import { useState, useEffect } from 'react';
+import { createDemoOrder, verifyPayment } from '../services/api';
 
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -18,7 +18,7 @@ const loadRazorpayScript = () => {
 export const useCheckout = () => {
     const [loading, setLoading] = useState(false);
 
-    const handleCheckout = async (items, totalAmount, optionsOverride = {}) => {
+    const handleCheckout = async (product, optionsOverride = {}) => {
         setLoading(true);
         const isLoaded = await loadRazorpayScript();
 
@@ -29,28 +29,31 @@ export const useCheckout = () => {
         }
 
         try {
-            const orderData = await createOrder(totalAmount, items);
+            // Use the Demo Order endpoint
+            const orderData = await createDemoOrder(product);
 
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_RywhhwrgCMa4su",
+                key: orderData.keyId || "rzp_test_RywhhwrgCMa4su", // Use key from backend or fallback
                 amount: orderData.amount,
                 currency: orderData.currency,
-                name: "ZNYCK Commerce",
-                description: "Checkout Transaction",
-                order_id: orderData.id,
+                name: orderData.product.name,
+                description: orderData.product.description || "Znyck Demo Transaction",
+                order_id: orderData.orderId,
                 handler: async function (response) {
                     try {
                         const verifyData = {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
-                            orderId: orderData.orderId
+                            productId: product._id, // Required for backend verification logic
+                            user: { email: 'guest@zonyck.demo', name: 'Guest User' }
                         };
                         const verifyRes = await verifyPayment(verifyData);
-                        if (verifyRes.status === 'success') {
+                        if (verifyRes.success || verifyRes.transactionId) {
                             alert('Payment Successful!');
                             if (optionsOverride.onSuccess) optionsOverride.onSuccess();
-                            window.location.href = '/';
+                            // Optional: Redirect to transactions or stay
+                            window.location.href = '/dashboard/transactions';
                         } else {
                             alert('Payment Verification Failed');
                         }
@@ -60,12 +63,12 @@ export const useCheckout = () => {
                     }
                 },
                 prefill: {
-                    name: "User Name",
-                    email: "user@example.com",
+                    name: "Guest User",
+                    email: "guest@example.com",
                     contact: "9999999999"
                 },
                 theme: {
-                    color: "#4f46e5"
+                    color: "#2563eb"
                 },
                 ...optionsOverride
             };
