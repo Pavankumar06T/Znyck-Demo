@@ -118,11 +118,21 @@ class PaymentController {
                 if (demoOrg) merchantOrgId = demoOrg._id;
             }
 
-            // App context is optional for Demo, but Transaction model might require it.
+            // App context: Match Product Category to App Name
             const Application = require('../../app/models/Application');
             let app = null;
+
             if (merchantOrgId) {
-                app = await Application.findOne({ organization: merchantOrgId });
+                const category = product ? product.category : 'E-Book'; // Default to E-Book if unknown
+                let appNamePattern = 'Znyck E-Books'; // Default
+
+                if (category === 'Freelance') appNamePattern = 'Znyck Freelance';
+                if (category === 'Product') appNamePattern = 'Znyck Gear';
+
+                app = await Application.findOne({
+                    organization: merchantOrgId,
+                    name: appNamePattern
+                });
             }
 
             if (!app) {

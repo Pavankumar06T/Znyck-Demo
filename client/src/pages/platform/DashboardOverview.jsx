@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Book, Briefcase, ShoppingBag, Wallet, CreditCard, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -36,8 +36,35 @@ const CategoryCard = ({ title, icon: Icon, colorClass, onBuy, onViewTransactions
     </div>
 );
 
+import { fetchApps } from '../../services/api';
+
 export default function DashboardOverview() {
     const navigate = useNavigate();
+    const [apps, setApps] = useState([]);
+
+    useEffect(() => {
+        // Fetch apps to map them to categories for filtering
+        const loadApps = async () => {
+            try {
+                const data = await fetchApps();
+                console.log('Loaded Apps for Dashboard:', data);
+                setApps(data);
+            } catch (err) {
+                console.error("Failed to fetch apps", err);
+            }
+        };
+        loadApps();
+    }, []);
+
+    const getAppIdByCategory = (categoryTitle) => {
+        if (!apps.length) return null;
+        let appName = 'Znyck E-Books';
+        if (categoryTitle === 'Freelance') appName = 'Znyck Freelance';
+        if (categoryTitle === 'Product') appName = 'Znyck Gear';
+
+        const app = apps.find(a => a.name === appName);
+        return app ? app._id : null;
+    };
 
     const categories = [
         { id: 'ebook', title: 'E-Book', icon: Book, color: 'from-purple-500 to-pink-500' },
@@ -45,9 +72,13 @@ export default function DashboardOverview() {
         { id: 'product', title: 'Product', icon: ShoppingBag, color: 'from-orange-500 to-red-500' },
     ];
 
-    const handleViewTransactions = (category) => {
-        // Navigate to transactions, optionally could filter by category if we wanted
-        navigate('/dashboard/transactions');
+    const handleViewTransactions = (categoryTitle) => {
+        const appId = getAppIdByCategory(categoryTitle);
+        if (appId) {
+            navigate(`/dashboard/transactions?appId=${appId}`);
+        } else {
+            navigate('/dashboard/transactions');
+        }
     };
 
     const handleBuy = (categoryTitle) => {
@@ -69,7 +100,7 @@ export default function DashboardOverview() {
                         icon={cat.icon}
                         colorClass={cat.color}
                         onBuy={() => handleBuy(cat.title)}
-                        onViewTransactions={() => handleViewTransactions(cat.id)}
+                        onViewTransactions={() => handleViewTransactions(cat.title)}
                     />
                 ))}
             </div>

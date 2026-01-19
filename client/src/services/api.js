@@ -52,4 +52,9 @@ export const seedProducts = async () => {
     return await api.post('/products/seed');
 };
 
+export const fetchApps = async () => {
+    const response = await api.get('/apps');
+    return response.data;
+};
+
 export default api;
