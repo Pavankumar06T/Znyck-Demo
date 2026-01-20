@@ -150,19 +150,15 @@ class PaymentController {
             }
 
             // App context: Match Product Category to App Name
+            // Refactored to Single App Model as per requirements
             const Application = require('../../app/models/Application');
             let app = null;
 
             if (merchantOrgId) {
-                const category = product ? product.category : 'E-Book'; // Default to E-Book if unknown
-                let appNamePattern = 'Znyck E-Books'; // Default
-
-                if (category === 'Freelance') appNamePattern = 'Znyck Freelance';
-                if (category === 'Product') appNamePattern = 'Znyck Gear';
-
+                // Try to find the consolidated Demo App first
                 app = await Application.findOne({
                     organization: merchantOrgId,
-                    name: appNamePattern
+                    name: 'Znyck Demo App'
                 });
             }
 

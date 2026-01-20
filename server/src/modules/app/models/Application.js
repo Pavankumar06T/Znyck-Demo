@@ -7,28 +7,44 @@ const applicationSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    // Public User-Friendly ID (e.g. app_x8s7d)
+    appId: {
+        type: String,
+        unique: true,
+        required: true,
+        index: true
+    },
     organization: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Organization',
         required: true
     },
-    environment: {
+    description: {
         type: String,
-        enum: ['test', 'production'],
-        default: 'test'
+        trim: true,
+        default: ''
     },
-    // Public Key (Safe to expose)
-    publicKey: {
+    type: {
         type: String,
-        unique: true,
-        default: () => 'pk_' + crypto.randomBytes(12).toString('hex')
+        enum: ['web', 'mobile', 'backend', 'saas'],
+        default: 'web',
+        required: true
     },
-    // Secret Key (Hashed? For now storing raw for MVP display/simplicity, strict security would hash it)
-    // In a real expanded prod env, we'd only show this once. 
-    secretKey: {
+    status: {
         type: String,
-        unique: true,
-        default: () => 'sk_' + crypto.randomBytes(24).toString('hex')
+        enum: ['active', 'paused', 'archived'],
+        default: 'active'
+    },
+    // Dual Environment Keys
+    apiKeys: {
+        test: {
+            publicKey: { type: String, required: true },
+            secretKey: { type: String, required: true }
+        },
+        live: {
+            publicKey: { type: String, required: true },
+            secretKey: { type: String, required: true }
+        }
     },
     webhookUrl: {
         type: String,

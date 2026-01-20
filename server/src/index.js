@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const crypto = require('crypto');
 
 // Controllers
 const PaymentController = require('./modules/payment/controllers/PaymentController');
@@ -183,25 +184,37 @@ const startServer = async () => {
 
 
         async function seedApps(orgId) {
-            const apps = [
-                { name: 'Znyck E-Books', env: 'production', type: 'digital' },
-                { name: 'Znyck Freelance', env: 'production', type: 'service' },
-                { name: 'Znyck Gear', env: 'test', type: 'physical' }
-            ];
+            const generateKey = (prefix) => `${prefix}_${crypto.randomBytes(24).toString('hex')}`;
 
-            for (const app of apps) {
-                // Idempotent check
-                const exists = await Application.findOne({ name: app.name, organization: orgId });
-                if (!exists) {
-                    await Application.create({
-                        name: app.name,
-                        organization: orgId,
-                        environment: app.env,
-                        publicKey: `pk_${app.env}_${app.type}_${Math.random().toString(36).substr(2, 6)}`,
-                        secretKey: `sk_${app.env}_${app.type}_${Math.random().toString(36).substr(2, 6)}`,
-                        settings: { theme: app.type }
-                    });
-                }
+            // Consolidate into ONE single app as requested
+            const appName = 'Znyck Demo App';
+            const exists = await Application.findOne({ name: appName, organization: orgId });
+
+            if (!exists) {
+                // Remove old legacy apps if they exist to clean up
+                await Application.deleteMany({
+                    organization: orgId,
+                    name: { $in: ['Znyck E-Books', 'Znyck Freelance', 'Znyck Gear'] }
+                });
+
+                await Application.create({
+                    name: appName,
+                    organization: orgId,
+                    type: 'saas',
+                    appId: `app_${crypto.randomBytes(6).toString('hex')}`,
+                    apiKeys: {
+                        test: {
+                            publicKey: generateKey('pk_test'),
+                            secretKey: generateKey('sk_test')
+                        },
+                        live: {
+                            publicKey: generateKey('pk_live'),
+                            secretKey: generateKey('sk_live')
+                        }
+                    },
+                    settings: { theme: 'dark' }
+                });
+                console.log('✨ Seed Complete: Created Single Demo App');
             }
         }
 

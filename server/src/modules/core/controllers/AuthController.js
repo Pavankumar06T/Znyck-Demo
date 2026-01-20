@@ -58,7 +58,7 @@ class AuthController {
                     description: "Professional templates to jumpstart your next big project.",
                     price: 4900, // ₹49.00
                     currency: "INR",
-                    category: "Products",
+                    category: "Product",
                     image: "https://images.unsplash.com/photo-1626785774573-4b799314346d?auto=format&fit=crop&q=80&w=800",
                     organization: org._id
                 }

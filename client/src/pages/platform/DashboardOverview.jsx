@@ -49,15 +49,7 @@ export default function DashboardOverview() {
         loadApps();
     }, []);
 
-    const getAppIdByCategory = (categoryTitle) => {
-        if (!apps.length) return null;
-        let appName = 'Znyck E-Books';
-        if (categoryTitle === 'Freelance') appName = 'Znyck Freelance';
-        if (categoryTitle === 'Product') appName = 'Znyck Gear';
-
-        const app = apps.find(a => a.name === appName);
-        return app ? app._id : null;
-    };
+    // Helper functions can go here
 
     const categories = [
         { id: 'ebook', title: 'E-Book', icon: Book, color: 'from-purple-500 to-pink-500' },

@@ -53,8 +53,25 @@ export const seedProducts = async () => {
     return await api.post('/products/seed');
 };
 
-export const fetchApps = async () => {
-    const response = await api.get('/apps');
+export const fetchApps = async (orgId) => {
+    const params = { organizationId: orgId };
+    const response = await api.get('/apps', { params });
+    return response.data;
+};
+
+export const createApp = async (appData) => {
+    const response = await api.post('/apps', appData);
+    return response.data;
+};
+
+export const fetchAppById = async (id) => {
+    const response = await api.get(`/apps/${id}`);
+    return response.data;
+};
+
+export const fetchTransactions = async () => {
+    console.log('API Service: Fetching transactions from /transactions endpoint');
+    const response = await api.get('/transactions');
     return response.data;
 };
 

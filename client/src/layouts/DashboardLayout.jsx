@@ -37,7 +37,7 @@ export default function DashboardLayout() {
             <aside className="w-64 border-r border-white/10 flex flex-col">
                 <div className="p-6">
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                        Znyck Pay
+                        Znyck Demo
                     </h1>
                     <p className="text-xs text-gray-500 mt-1">Platform Console</p>
                 </div>

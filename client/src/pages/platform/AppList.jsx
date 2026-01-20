@@ -62,7 +62,11 @@ export default function AppList() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newAppName, setNewAppName] = useState('');
+    const [newAppType, setNewAppType] = useState('web');
+    const [newAppDesc, setNewAppDesc] = useState('');
     const [orgId, setOrgId] = useState(null);
+
+    const navigate = useNavigate();
 
     const fetchApps = async () => {
         try {
@@ -101,13 +105,17 @@ export default function AppList() {
                 body: JSON.stringify({
                     name: newAppName,
                     organizationId: orgId,
-                    environment: 'test'
+                    environment: 'test',
+                    type: newAppType,
+                    description: newAppDesc
                 })
             });
             const newApp = await res.json();
-            setApps([...apps, newApp]);
+            setApps([newApp, ...apps]);
             setIsModalOpen(false);
             setNewAppName('');
+            setNewAppDesc('');
+            setNewAppType('web');
         } catch (err) {
             console.error(err);
         }
@@ -116,7 +124,7 @@ export default function AppList() {
     if (loading) return <div className="text-center p-10 text-gray-500"><Loader2 className="animate-spin inline mr-2" /> Loading Apps...</div>;
 
     return (
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto p-8">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-white">Applications</h2>
@@ -135,7 +143,33 @@ export default function AppList() {
                 {apps.length === 0 ? (
                     <div className="col-span-3 text-center py-10 text-gray-500">No applications found. Create one to get started.</div>
                 ) : (
-                    apps.map(app => <AppCard key={app._id} app={app} />)
+                    apps.map(app => (
+                        <div
+                            key={app._id}
+                            onClick={() => navigate(`/org/${orgId}/apps/${app._id}`)}
+                            className="bg-[#1c1f2e] border border-white/5 rounded-xl p-6 hover:border-blue-500/30 transition-all cursor-pointer group relative overflow-hidden"
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="p-3 bg-white/5 rounded-lg text-blue-400 group-hover:bg-blue-500/10 transition-colors">
+                                    <ListOrdered size={20} />
+                                </div>
+                                <span className={`text-xs px-2 py-1 rounded-full uppercase font-bold tracking-wider ${app.environment === 'production' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'
+                                    }`}>
+                                    {app.environment}
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{app.name}</h3>
+                            <p className="text-sm text-gray-500 mb-4 line-clamp-2 min-h-[40px]">
+                                {app.description || 'No description provided.'}
+                            </p>
+
+                            <div className="flex items-center space-x-3 text-xs text-gray-500 font-mono pt-4 border-t border-white/5">
+                                <span className="bg-white/5 px-2 py-1 rounded text-gray-400">{app.type}</span>
+                                <span>{new Date(app.createdAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    ))
                 )}
             </div>
 
@@ -155,6 +189,28 @@ export default function AppList() {
                                     autoFocus
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">App Type</label>
+                                <select
+                                    value={newAppType}
+                                    onChange={e => setNewAppType(e.target.value)}
+                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
+                                >
+                                    <option value="web">Web Application</option>
+                                    <option value="mobile">Mobile App (iOS/Android)</option>
+                                    <option value="backend">Backend Service</option>
+                                    <option value="saas">SaaS Platform</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">Description</label>
+                                <textarea
+                                    value={newAppDesc}
+                                    onChange={e => setNewAppDesc(e.target.value)}
+                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500 h-20 resize-none"
+                                    placeholder="Short description of your app..."
+                                />
+                            </div>
                             <div className="flex space-x-3 justify-end pt-2">
                                 <button
                                     type="button"
@@ -168,7 +224,7 @@ export default function AppList() {
                                     disabled={!newAppName}
                                     className="bg-blue-600 px-4 py-2 rounded-lg text-white font-medium hover:bg-blue-500"
                                 >
-                                    Create
+                                    Create App
                                 </button>
                             </div>
                         </form>
