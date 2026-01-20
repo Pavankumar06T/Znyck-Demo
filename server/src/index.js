@@ -40,11 +40,15 @@ apiRouter.use((req, res, next) => {
     next();
 });
 
+const authenticateUser = require('./middleware/authenticateUser');
+
 // Auth Routes
 apiRouter.post('/auth/signup', AuthController.signup);
 apiRouter.post('/auth/login', AuthController.login);
+apiRouter.get('/auth/me', authenticateUser, AuthController.getMe);
 
 apiRouter.post('/orgs', OrganizationController.createOrg);
+apiRouter.put('/orgs/:id', authenticateUser, OrganizationController.updateOrg);
 apiRouter.get('/orgs', OrganizationController.listOrgs);
 apiRouter.post('/apps', ApplicationController.createApp);
 apiRouter.get('/apps', ApplicationController.listApps);

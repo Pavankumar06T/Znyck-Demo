@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Key, CreditCard, Settings,
     ShieldCheck, Bell, Search, ChevronDown, LogOut
@@ -13,7 +13,42 @@ export const usePlatform = () => useContext(PlatformContext);
 export default function PlatformLayout() {
     const [env, setEnv] = useState('test'); // 'test' | 'live'
     const location = useLocation();
+    const [user, setUser] = useState(null);
+    const [org, setOrg] = useState(null);
     const [scrolled, setScrolled] = useState(false);
+    const navigate = useNavigate();
+
+    const loadAuth = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+
+        fetch('http://localhost:5000/api/v1/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.user) setUser(data.user);
+                if (data.organization) setOrg(data.organization);
+            })
+            .catch(err => console.error('Layout Auth Check Failed:', err));
+    };
+
+    useEffect(() => {
+        loadAuth();
+    }, [navigate]);
+
+    const refetchAuth = () => {
+        loadAuth();
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+    };
 
     // Monitor scroll for header styling
     const handleScroll = (e) => {
@@ -30,7 +65,7 @@ export default function PlatformLayout() {
     const isTest = env === 'test';
 
     return (
-        <PlatformContext.Provider value={{ env, setEnv, isTest }}>
+        <PlatformContext.Provider value={{ env, setEnv, isTest, user, org, refetchAuth }}>
             <div className="flex h-screen bg-[#0f1117] text-white overflow-hidden font-inter">
 
                 {/* Sidebar */}
@@ -42,7 +77,7 @@ export default function PlatformLayout() {
                     </div>
 
                     {/* Nav */}
-                    <nav className="flex-1 p-4 espacio-y-1">
+                    <nav className="flex-1 p-4 space-y-1">
                         {navItems.map((item) => (
                             <NavLink
                                 key={item.path}
@@ -65,12 +100,14 @@ export default function PlatformLayout() {
                     {/* User Profile Footer */}
                     <div className="p-4 border-t border-white/5 bg-[#0f1117]/50">
                         <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 border border-white/10" />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">Acme Corp</p>
-                                <p className="text-xs text-gray-500 truncate">admin@acme.com</p>
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 border border-white/10 flex items-center justify-center text-xs font-bold">
+                                {org ? org.name.charAt(0).toUpperCase() : 'O'}
                             </div>
-                            <button className="text-gray-500 hover:text-white">
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">{org ? org.name : 'Loading...'}</p>
+                                <p className="text-xs text-gray-500 truncate">{user ? user.email : '...'}</p>
+                            </div>
+                            <button onClick={handleLogout} className="text-gray-500 hover:text-white" title="Sign Out">
                                 <LogOut size={16} />
                             </button>
                         </div>

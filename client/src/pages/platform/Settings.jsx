@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Mail, Globe, Palette, Save } from 'lucide-react';
+import { usePlatform } from '../../layouts/PlatformLayout';
 
 const Section = ({ title, icon: Icon, children }) => (
     <div className="bg-[#1c1f2e] border border-white/5 rounded-xl p-6 mb-6">
@@ -27,32 +28,65 @@ const InputField = ({ label, value, onChange, placeholder, type = "text" }) => (
 );
 
 export default function Settings() {
+    const { refetchAuth } = usePlatform();
     const [org, setOrg] = useState({ name: '', email: '', website: '' });
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Fetch org details (Mock for now, or fetch from API if available)
-        // Using same quick fetch pattern
-        fetch('http://localhost:5000/api/v1/orgs')
-            .then(r => r.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    const o = data[0];
-                    setOrg({
-                        name: o.name,
-                        email: o.billing_email || 'admin@acme.com',
-                        website: 'https://acme.com'
-                    });
-                }
-            });
+        // Fetch org details from currently logged in user
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch('http://localhost:5000/api/v1/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.organization) {
+                        const o = data.organization;
+                        const u = data.user || {};
+                        setOrg({
+                            _id: o._id,
+                            name: o.name,
+                            email: u.email || '',
+                            website: u.website || o.website || ''
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+        }
     }, []);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setLoading(true);
-        setTimeout(() => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token && org._id) {
+                const res = await fetch(`http://localhost:5000/api/v1/orgs/${org._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(org)
+                });
+
+                if (res.ok) {
+                    alert('Settings Updated Successfully!');
+                    if (refetchAuth) refetchAuth(); // Refresh sidebar data
+                } else {
+                    const errorData = await res.json();
+                    console.error('Update Failed:', errorData);
+                    alert(`Failed to update settings: ${res.status} - ${errorData.error || 'Unknown Error'}`);
+                }
+            } else {
+                alert(`Missing organization ID (${org._id ? 'Present' : 'Missing'}) or Token`);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
+            alert(`Error updating settings: ${err.message}`);
+        } finally {
             setLoading(false);
-            alert('Settings Saved! (Mock)');
-        }, 1000);
+        }
     };
 
     return (

@@ -31,11 +31,7 @@ const Login = () => {
                 return;
             }
 
-            if (response.data.role === 'customer') {
-                navigate('/demo');
-            } else {
-                navigate('/dashboard');
-            }
+            navigate('/user-space');
         } catch (err) {
             alert(err.response?.data?.error || 'Login failed');
         } finally {

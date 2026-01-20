@@ -8,7 +8,11 @@ class AuthController {
     // POST /api/v1/auth/signup
     async signup(req, res) {
         try {
-            const { email, password, companyName, saasType, role, name, nickname, country, contact } = req.body;
+            const { email, password, companyName, name, country, contact, panNumber, bankDetails, website } = req.body;
+
+            // Defaults since removed from UI
+            const role = 'admin';
+            const saasType = 'ebook-saas';
 
             // 1. Check if user exists
             const existingUser = await User.findOne({ email });
@@ -22,9 +26,11 @@ class AuthController {
                 email,
                 password: hashedPassword,
                 name: name || email.split('@')[0], // Use provided name or default
-                nickname,
                 country,
-                contact
+                contact,
+                website,
+                panNumber,
+                bankDetails
             });
 
             // 3. Create Tenant/Organization
@@ -65,6 +71,13 @@ class AuthController {
             ];
 
             await Product.insertMany(defaultProducts);
+
+            // 6. Generate Token
+            const token = jwt.sign(
+                { userId: user._id, orgId: org._id, role: role || 'admin' },
+                process.env.JWT_SECRET || 'secret_key_change_me',
+                { expiresIn: '7d' }
+            );
 
             res.status(201).json({
                 token,
@@ -126,6 +139,39 @@ class AuthController {
         } catch (error) {
             console.error('Login Error:', error);
             res.status(500).json({ error: 'Login failed' });
+        }
+    }
+    // GET /api/v1/auth/me
+    async getMe(req, res) {
+        try {
+            const userId = req.user.userId;
+            const user = await User.findById(userId).select('-password');
+
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // Fetch Organization
+            // Logic: Find org where this user is the owner OR a member
+            // For MVP simplicty, looking for one they own or just the one in the token
+            let org;
+            if (req.user.orgId) {
+                org = await Organization.findById(req.user.orgId);
+            } else {
+                org = await Organization.findOne({ 'members.user': userId });
+            }
+
+            res.json({
+                user: {
+                    ...user.toObject(),
+                    role: req.user.role // Return the effective role from token
+                },
+                organization: org
+            });
+
+        } catch (error) {
+            console.error('GetMe Error:', error);
+            res.status(500).json({ error: 'Failed to fetch user details' });
         }
     }
 }

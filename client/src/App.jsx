@@ -43,6 +43,8 @@ function App() {
             <Routes>
                 {/* Landing Page */}
                 <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
                 <Route path="/znyck-pay" element={<ZnyckPay />} />
                 {/* User Space (Console) Routes */}
                 <Route path="/user-space" element={<PlatformLayout />}>
