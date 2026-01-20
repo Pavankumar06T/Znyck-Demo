@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fetchTransactions } from '../services/api';
 import {
@@ -31,23 +32,37 @@ const MetricCard = ({ title, value, change, trend, icon: Icon }) => (
 
 export default function UserSpace() {
     const [transactions, setTransactions] = useState([]);
+    const [user, setUser] = useState(null);
+    const [org, setOrg] = useState(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-    const loadTransactions = async () => {
-        console.log('UserSpace: loadTransactions called');
+    const loadData = async () => {
         setLoading(true);
         try {
-            const data = await fetchTransactions();
-            setTransactions(data);
+            // Fetch Transactions
+            const txData = await fetchTransactions();
+            setTransactions(txData);
+
+            // Fetch User Profile
+            const token = localStorage.getItem('token');
+            if (token) {
+                const res = await fetch('http://localhost:5000/api/v1/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const userData = await res.json();
+                if (userData.user) setUser(userData.user);
+                if (userData.organization) setOrg(userData.organization);
+            }
         } catch (error) {
-            console.error('Failed to fetch transactions:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        loadTransactions();
+        loadData();
     }, []);
 
     // Calculate Metrics (Mock/Derived)
@@ -121,7 +136,7 @@ export default function UserSpace() {
                         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
                             <h3 className="font-bold text-lg">Recent Transactions</h3>
                             <div className="flex space-x-2">
-                                <button onClick={loadTransactions} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 transition-colors">
+                                <button onClick={loadData} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 transition-colors">
                                     <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                                 </button>
                                 <button className="p-2 hover:bg-white/10 rounded-lg text-gray-400 transition-colors">
@@ -194,32 +209,37 @@ export default function UserSpace() {
                         </h3>
 
                         <div className="flex flex-col items-center text-center mb-6">
-                            <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold mb-3 ring-4 ring-[#0f1117] shadow-xl">
-                                SM
+                            <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold mb-3 ring-4 ring-[#0f1117] shadow-xl text-white">
+                                {user ? user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
-                            <h4 className="text-xl font-bold text-white">Smith Doe</h4>
-                            <p className="text-sm text-gray-500">smith@example.com</p>
-                            <div className="mt-2 px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded-full font-medium border border-blue-500/20">
-                                Global Admin
+                            <h4 className="text-xl font-bold text-white">{user ? user.name : 'User'}</h4>
+                            <p className="text-sm text-gray-500">{user ? user.email : 'user@example.com'}</p>
+                            <div className="mt-2 px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded-full font-medium border border-blue-500/20 capitalize">
+                                {user ? user.role : 'Member'}
                             </div>
                         </div>
 
                         <div className="space-y-4 border-t border-white/5 pt-6">
                             <div>
                                 <label className="text-xs text-gray-500 uppercase font-semibold">Organization</label>
-                                <div className="text-gray-300 font-medium mt-1">Acme Corp (Demo)</div>
+                                <div className="text-gray-300 font-medium mt-1">{org ? org.name : 'My Organization'}</div>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase font-semibold">Location</label>
-                                <div className="text-gray-300 font-medium mt-1">California, USA</div>
+                                <div className="text-gray-300 font-medium mt-1">{user ? user.country : 'Unknown'}</div>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase font-semibold">Member Since</label>
-                                <div className="text-gray-300 font-medium mt-1">Jan 2026</div>
+                                <div className="text-gray-300 font-medium mt-1">
+                                    {user ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : '-'}
+                                </div>
                             </div>
                         </div>
 
-                        <button className="w-full mt-8 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-medium">
+                        <button
+                            onClick={() => navigate('/user-space/settings')}
+                            className="w-full mt-8 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-medium"
+                        >
                             Edit Profile
                         </button>
                     </div>

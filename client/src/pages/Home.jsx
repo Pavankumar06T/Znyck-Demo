@@ -21,7 +21,6 @@ export default function Home() {
                     <a href="#" className="hover:text-white transition-colors">Pricing</a>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <Link to="/login" className="text-sm font-medium text-gray-400 hover:text-white">Sign In</Link>
                     <Link to="/dashboard" className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-200 transition-colors">
                         Dashboard
                     </Link>
@@ -53,7 +52,7 @@ export default function Home() {
                     </p>
 
                     <div className="flex items-center justify-center space-x-4">
-                        <Link to="/znyck-pay" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-500 transition-all flex items-center space-x-2 shadow-lg shadow-blue-600/20">
+                        <Link to="/signup" className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-500 transition-all flex items-center space-x-2 shadow-lg shadow-blue-600/20">
                             <span>Znyck Pay</span>
                             <ArrowRight size={20} />
                         </Link>

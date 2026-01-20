@@ -44,13 +44,21 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 1. Management API (For Dashboard)
 const apiRouter = express.Router();
+apiRouter.use((req, res, next) => {
+    console.log(`[API Router] Checking: ${req.method} ${req.path}`);
+    next();
+});
+
+const authenticateUser = require('./middleware/authenticateUser');
 
 // Auth
 apiRouter.post('/auth/signup', AuthController.signup);
 apiRouter.post('/auth/login', AuthController.login);
+apiRouter.get('/auth/me', authenticateUser, AuthController.getMe);
 
 // Organization
 apiRouter.post('/orgs', OrganizationController.createOrg);
+apiRouter.put('/orgs/:id', authenticateUser, OrganizationController.updateOrg);
 apiRouter.get('/orgs', OrganizationController.listOrgs);
 
 // Applications
