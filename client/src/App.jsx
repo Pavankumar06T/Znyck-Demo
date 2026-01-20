@@ -12,8 +12,11 @@ import Signup from './pages/Signup';
 import ZnyckPay from './pages/ZnyckPay';
 import UserSpace from './pages/UserSpace';
 import PlatformLayout from './layouts/PlatformLayout';
-import Developers from './pages/platform/Developers';
 import Settings from './pages/platform/Settings';
+import PaymentsAppsList from './pages/platform/PaymentsAppsList';
+import AppLayout from './layouts/AppLayout';
+import AppOverview from './pages/platform/AppOverview';
+import AppKeys from './pages/platform/AppKeys';
 
 // Platform Pages
 import DashboardOverview from './pages/platform/DashboardOverview';
@@ -47,10 +50,19 @@ function App() {
                 {/* User Space (Console) Routes */}
                 <Route path="/user-space" element={<PlatformLayout />}>
                     <Route index element={<UserSpace />} />
-                    <Route path="developers" element={<Developers />} />
                     <Route path="settings" element={<Settings />} />
-                    {/* Placeholder for payments if we don't build a dedicated page yet */}
-                    <Route path="payments" element={<Navigate to="/user-space" />} />
+
+                    {/* Payments -> Apps List */}
+                    <Route path="payments" element={<PaymentsAppsList />} />
+
+                    {/* Individual App Details */}
+                    <Route path="apps/:appId" element={<AppLayout />}>
+                        <Route index element={<AppOverview />} />
+                        {/* Re-use placeholder/specific components */}
+                        <Route path="transactions" element={<div className="p-10 text-center text-gray-500">Transactions List Integration Pending</div>} />
+                        <Route path="keys" element={<AppKeys />} />
+                        <Route path="settings" element={<div className="p-10 text-center text-gray-500">App Settings Pending</div>} />
+                    </Route>
                 </Route>
 
                 {/* Public/Mock Routes */}

@@ -2,59 +2,69 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const path = require('path');
 const crypto = require('crypto');
 
-// Controllers
-const PaymentController = require('./modules/payment/controllers/PaymentController');
-const ApplicationController = require('./modules/app/controllers/ApplicationController');
-const OrganizationController = require('./modules/core/controllers/OrganizationController');
+// Import Config
+const connectDB = require('./config/db');
 
-// Middleware
+// Import Controllers
+const AuthController = require('./modules/core/controllers/AuthController');
+const OrganizationController = require('./modules/core/controllers/OrganizationController');
+const ApplicationController = require('./modules/app/controllers/ApplicationController');
+const PaymentController = require('./modules/payment/controllers/PaymentController');
+const ProductController = require('./modules/payment/controllers/ProductController');
+
+// Import Middleware
 const authenticateApp = require('./middleware/authenticateApp');
 
-const app = express();
+// Import Models for Seeding
+const User = require('./modules/core/models/User');
+const Organization = require('./modules/core/models/Organization');
+const Application = require('./modules/app/models/Application');
+const Product = require('./modules/payment/models/Product');
 
-app.use(cors());
+// Initialize App
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
+
+// Static serve for uploads (if any)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- ROUTES ---
 
-app.get('/', (req, res) => res.send('Znyck Pay API Running 🚀'));
-
-const ProductController = require('./modules/payment/controllers/ProductController');
-const AuthController = require('./modules/core/controllers/AuthController');
-console.log('AuthController loaded:', AuthController);
-console.log('AuthController proto:', Object.getPrototypeOf(AuthController));
-console.log('AuthController.login type:', typeof AuthController.login);
-
-// Auth Routes - Registered directly to ensure precedence
-app.post('/api/v1/auth/signup', AuthController.signup);
-app.post('/api/v1/auth/login', AuthController.login);
-
 // 1. Management API (For Dashboard)
-// In a real app, this would be protected by User Auth (JWT)
 const apiRouter = express.Router();
-apiRouter.use((req, res, next) => {
-    console.log(`[API Router] Checking: ${req.method} ${req.path}`);
-    next();
-});
 
-// Auth Routes
+// Auth
 apiRouter.post('/auth/signup', AuthController.signup);
 apiRouter.post('/auth/login', AuthController.login);
 
+// Organization
 apiRouter.post('/orgs', OrganizationController.createOrg);
 apiRouter.get('/orgs', OrganizationController.listOrgs);
+
+// Applications
 apiRouter.post('/apps', ApplicationController.createApp);
 apiRouter.get('/apps', ApplicationController.listApps);
+apiRouter.get('/apps/:id', ApplicationController.getApp);
+
+// Transactions
 apiRouter.get('/transactions', PaymentController.listTransactions);
 
-// Product Management
+// Products
 apiRouter.post('/products', ProductController.createProduct);
 apiRouter.get('/products', ProductController.listProducts);
 
-// Demo Payment Route (Public for this demo)
 // Demo Payment Route (Public for this demo)
 apiRouter.post('/payments/demo-order', PaymentController.createDemoOrder);
 apiRouter.post('/payments/verify-demo-order', PaymentController.verifyDemoOrder);
@@ -62,9 +72,7 @@ apiRouter.post('/payments/verify-demo-order', PaymentController.verifyDemoOrder)
 app.use('/api/v1', apiRouter);
 
 // 2. Payment API (For Client Apps / SDKs)
-// Protected by API Key ('x-api-key' header)
 const paymentRouter = express.Router();
-// paymentRouter.use(authenticateApp); // Access control moved to specific routes
 
 paymentRouter.post('/orders', authenticateApp, PaymentController.createOrder);
 paymentRouter.get('/orders/:id', authenticateApp, PaymentController.getOrder);
@@ -72,136 +80,94 @@ paymentRouter.get('/orders/:id', authenticateApp, PaymentController.getOrder);
 app.use('/api/v1', paymentRouter);
 
 
-const PORT = process.env.PORT || 5000;
+// Mock Test Route
+app.get('/', (req, res) => {
+    res.send({ message: 'Znyck Pay API is running 🚀', version: '1.0.0' });
+});
 
-const startServer = async () => {
-    let mongoUri = process.env.MONGO_URI;
-
+// Connect to DB and Start Server
+connectDB().then(async () => {
+    // SEEDING LOGIC
     try {
-        // Fallback to Memory Server if no URI or explicit 'memory' request
-        if (!mongoUri || mongoUri === 'memory') {
-            const mongod = await MongoMemoryServer.create();
-            mongoUri = mongod.getUri();
-            console.log('⚠️ Using In-Memory MongoDB at:', mongoUri);
+        console.log('🌱 Seeding missing Demo Apps...');
+
+        let demoOrg = await Organization.findOne({ name: 'Acme Corp' });
+        if (!demoOrg) {
+            // Create if missing (simplified)
+            const user = await User.findOne({});
+            if (user) {
+                demoOrg = await Organization.create({
+                    name: 'Acme Corp',
+                    owner: user._id,
+                    members: [{ user: user._id, role: 'admin' }]
+                });
+            }
         }
 
-        await mongoose.connect(mongoUri);
-        console.log('✅ Connected to MongoDB');
+        if (demoOrg) {
+            await seedApps(demoOrg._id);
+            await seedProducts(demoOrg._id);
+        }
 
-        // --- SEED DATA (For Demo) ---
-        const User = require('./modules/core/models/User');
-        const Organization = require('./modules/core/models/Organization');
-        const Application = require('./modules/app/models/Application');
+        async function seedProducts(orgId) {
+            const count = await Product.countDocuments();
+            if (count > 0) return;
 
-        const userCount = await User.countDocuments();
-        if (userCount === 0) {
-            console.log('🌱 Seeding Initial Data...');
-            const user = await User.create({ name: 'Demo Admin', email: 'admin@znyck.com', password: 'hashed_secret' });
-            const org = await Organization.create({ name: 'Acme Corp (Demo)', owner: user._id, members: [{ user: user._id, role: 'admin' }] });
+            const categories = ['E-Book', 'Freelance', 'Product'];
 
-            await seedApps(org._id);
-            console.log('✨ Seed Complete: Created User, Org, and Apps');
-        } else {
-            // Check for legacy demo app and remove it (Clean up from previous runs)
-            await Application.deleteOne({ name: 'Demo SaaS App' });
-
-            // Ensure Organization Exists
-            let org = await Organization.findOne();
-            if (!org) {
-                console.log('⚠️ No Organization found. Creating default Org...');
-                // Try to find a user to assign owner, or create one
-                let user = await User.findOne();
-                if (!user) {
-                    user = await User.create({ name: 'Demo Admin', email: 'admin@znyck.com', password: 'hashed_secret' });
+            for (const cat of categories) {
+                for (let i = 1; i <= 5; i++) {
+                    await Product.create({
+                        name: `${cat} Item ${i}`,
+                        description: `A sample ${cat} for demo purposes.`,
+                        price: (Math.random() * 100 + 10).toFixed(2) * 100, // cents
+                        currency: 'INR',
+                        category: cat,
+                        organization: orgId,
+                        imageUrl: `https://placehold.co/400?text=${cat}+${i}`
+                    });
                 }
-                org = await Organization.create({ name: 'Acme Corp (Demo)', owner: user._id, members: [{ user: user._id, role: 'admin' }] });
             }
-
-            // Check if our new apps exist
-            const ebookApp = await Application.findOne({ name: 'Znyck E-Books' });
-            if (!ebookApp) {
-                console.log('🌱 Seeding missing Demo Apps...');
-                await seedApps(org._id);
-                console.log('✨ Seed Complete: Added E-Books, Freelance, and Gear Apps');
-            }
-        }
-
-        // --- SEED PRODUCTS ---
-        const Product = require('./modules/payment/models/Product');
-
-        // Always re-seed for this demo to ensure we have the correct data
-        try {
-            await Product.deleteMany({});
-            console.log('🧹 Cleared existing products for re-seeding');
-        } catch (e) {
-            console.log('⚠️ Could not clear products', e);
-        }
-
-        console.log('🌱 Seeding Products...');
-        // Find the Demo Admin Org
-        const demoAdmin = await User.findOne({ email: 'admin@znyck.com' });
-        let seedOrgId = null;
-        if (demoAdmin) {
-            const demoOrg = await Organization.findOne({ owner: demoAdmin._id });
-            if (demoOrg) seedOrgId = demoOrg._id;
-        }
-
-        // If we found the demo org, seed products for it
-        if (seedOrgId) {
-            const productsToSeed = [
-                // E-Book Category (5 Items)
-                { name: "The Art of Code", description: "A comprehensive guide to clean code principles.", price: 2900, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Advanced React Patterns", description: "Master modern React architecture.", price: 4900, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "System Design Interview", description: "Crack the system design interview.", price: 3500, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "The Pragmatic Programmer", description: "From journeyman to master.", price: 4200, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Microservices Patterns", description: "With examples in Java.", price: 5500, currency: "INR", category: "E-Book", image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-
-                // Freelance Category (5 Items)
-                { name: "Full Stack Consultancy", description: "1-hour consultation session for your project.", price: 15000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "UI/UX Design Review", description: "Expert review of your application design.", price: 9900, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Code Review Session", description: "In-depth code analysis and feedback.", price: 8000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Mentorship Call", description: "30-minute career guidance call.", price: 5000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Database Optimization", description: "Performance tuning for your database.", price: 12000, currency: "INR", category: "Freelance", image: "https://images.unsplash.com/photo-1504384308090-c54be3855833?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-
-                // Product Category (5 Items) - Note: Category name is 'Product' (Singular) to match frontend
-                { name: "Developer Mechanical Keycaps", description: "Set of 12 custom keycaps for coding.", price: 1200, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Ergonomic Mouse", description: "Vertical mouse for reduced strain.", price: 2500, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Noise Cancelling Headphones", description: "Focus on your code in silence.", price: 18000, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Laptop Stand", description: "Aluminum stand for better posture.", price: 1500, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Desk Mat", description: "Large extended gaming mouse pad.", price: 900, currency: "INR", category: "Product", image: "https://images.unsplash.com/photo-1629904832560-6425979bb8c1?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-
-                // USD Items for Stripe Testing
-                { name: "The Art of Code (USD)", description: "Global Edition (USD)", price: 4900, currency: "USD", category: "E-Book", image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Global Consultancy (USD)", description: "International Consultation", price: 20000, currency: "USD", category: "Freelance", image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800", organization: seedOrgId },
-                { name: "Global Shipping Product (USD)", description: "Worldwide Shipping", price: 5000, currency: "USD", category: "Product", image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&q=80&w=800", organization: seedOrgId }
-            ];
-
-            await Product.insertMany(productsToSeed);
             console.log('✨ Seed Complete: Added 15 Default Products (5 per category)');
-        } else {
-            console.log('⚠️ Skipping Product Seed: Demo Admin Org not found');
         }
-
 
         async function seedApps(orgId) {
             const generateKey = (prefix) => `${prefix}_${crypto.randomBytes(24).toString('hex')}`;
 
-            // Consolidate into ONE single app as requested
-            const appName = 'Znyck Demo App';
-            const exists = await Application.findOne({ name: appName, organization: orgId });
+            // MIGRATION: Drop legacy indexes if they exist
+            try {
+                await Application.collection.dropIndex('publicKey_1');
+            } catch (e) { /* Ignore */ }
 
-            if (!exists) {
-                // Remove old legacy apps if they exist to clean up
-                await Application.deleteMany({
-                    organization: orgId,
-                    name: { $in: ['Znyck E-Books', 'Znyck Freelance', 'Znyck Gear'] }
-                });
+            try {
+                await Application.collection.dropIndex('secretKey_1');
+            } catch (e) { /* Ignore */ }
 
+            // Define the 3 apps to restore matches EXACTLY the dashboard cards
+            // STATIC IDs prevent 404s on frontend refreshes during demo
+            const appsToSeed = [
+                { name: 'E-Book', type: 'digital', staticId: 'app_ebook_demo_123' },
+                { name: 'Freelance', type: 'service', staticId: 'app_freelance_demo_456' },
+                { name: 'Product', type: 'physical', staticId: 'app_product_demo_789' }
+            ];
+
+            const appIds = appsToSeed.map(a => a.staticId);
+
+            // Clean up ANY existing apps with these IDs (across any Org) to prevent duplicate key errors
+            // Also clean up by name within this org to be safe
+            await Application.deleteMany({
+                $or: [
+                    { appId: { $in: appIds } },
+                    { organization: orgId, name: { $in: ['Znyck Demo App', 'Znyck E-Books', 'Znyck Freelance', 'Znyck Gear', 'E-Book', 'Freelance', 'Product'] } }
+                ]
+            });
+
+            for (const app of appsToSeed) {
                 await Application.create({
-                    name: appName,
+                    name: app.name,
                     organization: orgId,
-                    type: 'saas',
-                    appId: `app_${crypto.randomBytes(6).toString('hex')}`,
+                    type: app.type,
+                    appId: app.staticId,
                     apiKeys: {
                         test: {
                             publicKey: generateKey('pk_test'),
@@ -214,16 +180,16 @@ const startServer = async () => {
                     },
                     settings: { theme: 'dark' }
                 });
-                console.log('✨ Seed Complete: Created Single Demo App');
+                console.log(`✨ Seeded App: ${app.name} (${app.staticId})`);
             }
+            console.log('✨ Seed Complete: Ensured 3 Apps exist with STATIC IDs');
         }
 
         app.listen(PORT, () => {
             console.log(`🚀 Znyck Pay Server running on port ${PORT}`);
         });
-    } catch (err) {
-        console.error('❌ MongoDB connection error:', err);
-    }
-};
 
-startServer();
+    } catch (e) {
+        console.error('Seeding Error:', e);
+    }
+});

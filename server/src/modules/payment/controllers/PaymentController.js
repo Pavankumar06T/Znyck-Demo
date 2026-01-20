@@ -155,15 +155,22 @@ class PaymentController {
             let app = null;
 
             if (merchantOrgId) {
-                // Try to find the consolidated Demo App first
+                // Map Product Category to App Name (Exact Match)
+                let targetAppName = 'E-Book'; // Default
+                if (product) {
+                    if (product.category === 'Freelance') targetAppName = 'Freelance';
+                    if (product.category === 'Product') targetAppName = 'Product';
+                }
+
                 app = await Application.findOne({
                     organization: merchantOrgId,
-                    name: 'Znyck Demo App'
+                    name: targetAppName
                 });
             }
 
             if (!app) {
-                app = await Application.findOne(); // Fallback to any app
+                // Fallback: try finding any of the known demo apps, or just the first one
+                app = await Application.findOne({ organization: merchantOrgId });
             }
 
             // 3. Create Transaction Record

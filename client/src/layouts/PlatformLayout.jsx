@@ -23,7 +23,7 @@ export default function PlatformLayout() {
     const navItems = [
         { path: '/user-space', label: 'Home', icon: LayoutDashboard },
         { path: '/user-space/payments', label: 'Payments', icon: CreditCard },
-        { path: '/user-space/developers', label: 'Developers', icon: Key },
+        // Developers moved to inside Apps
         { path: '/user-space/settings', label: 'Settings', icon: Settings },
     ];
 

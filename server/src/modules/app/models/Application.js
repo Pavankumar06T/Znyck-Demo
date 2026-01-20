@@ -26,7 +26,7 @@ const applicationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['web', 'mobile', 'backend', 'saas'],
+        enum: ['web', 'mobile', 'backend', 'saas', 'digital', 'service', 'physical'],
         default: 'web',
         required: true
     },
