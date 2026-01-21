@@ -82,6 +82,8 @@ export default function PaymentsAppsList() {
 
                     // Aggregate stats per App
                     const computedStats = {};
+                    console.log('DEBUG: Apps Data:', appsData);
+                    console.log('DEBUG: Transactions Data:', transactionsData);
 
                     // Create a lookup for App ID by Name to handle re-seeded apps (where old transactions have old IDs but same Name)
                     const appIdByName = {};
@@ -94,15 +96,23 @@ export default function PaymentsAppsList() {
 
                         let targetAppId = null;
 
-                        // 1. Try to match by Name (Robust for Demo Re-seeding)
-                        if (typeof tx.application === 'object' && tx.application.name) {
+                        // 1. Try to match by Static App ID (Most Robust)
+                        if (typeof tx.application === 'object' && tx.application.appId) {
+                            const appByStaticId = appsData.find(a => a.appId === tx.application.appId);
+                            if (appByStaticId) {
+                                targetAppId = appByStaticId._id;
+                                // console.log(`Matched ${tx._id} by Static ID`);
+                            }
+                        }
+
+                        // 2. Try to match by Name (Robust for Demo Re-seeding)
+                        if (!targetAppId && typeof tx.application === 'object' && tx.application.name) {
                             targetAppId = appIdByName[tx.application.name];
                         }
 
-                        // 2. Fallback to direct ID match if name match failed or not populated
+                        // 3. Fallback to direct ID match
                         if (!targetAppId) {
                             const txAppId = typeof tx.application === 'object' ? tx.application._id : tx.application;
-                            // Only use if this ID actually exists in our current apps list
                             if (appsData.find(a => a._id === txAppId)) {
                                 targetAppId = txAppId;
                             }
@@ -112,10 +122,15 @@ export default function PaymentsAppsList() {
                             if (!computedStats[targetAppId]) {
                                 computedStats[targetAppId] = { revenue: 0, count: 0 };
                             }
-                            computedStats[targetAppId].revenue += tx.amount || 0;
+                            // Ensure amount is parsed as integer (DB stores cents)
+                            const amount = parseInt(tx.amount || 0);
+                            computedStats[targetAppId].revenue += amount;
                             computedStats[targetAppId].count += 1;
+                        } else {
+                            console.log('DEBUG: Unmatched Transaction:', tx);
                         }
                     });
+                    console.log('DEBUG: Computed Stats:', computedStats);
                     setStats(computedStats);
                 }
             } catch (e) {

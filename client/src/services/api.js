@@ -53,6 +53,11 @@ export const seedProducts = async () => {
     return await api.post('/products/seed');
 };
 
+export const fetchOrgs = async () => {
+    const response = await api.get('/orgs');
+    return response.data;
+};
+
 export const fetchApps = async (orgId) => {
     const params = { organizationId: orgId };
     const response = await api.get('/apps', { params });

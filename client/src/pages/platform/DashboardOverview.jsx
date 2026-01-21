@@ -29,7 +29,7 @@ const CategoryCard = ({ title, icon: Icon, colorClass, onBuy }) => (
     </div>
 );
 
-import { fetchApps } from '../../services/api';
+import { fetchApps, fetchOrgs } from '../../services/api';
 
 export default function DashboardOverview() {
     const navigate = useNavigate();
@@ -39,9 +39,15 @@ export default function DashboardOverview() {
         // Fetch apps to map them to categories for filtering
         const loadApps = async () => {
             try {
-                const data = await fetchApps();
-                console.log('Loaded Apps for Dashboard:', data);
-                setApps(data);
+                // 1. Get Organization
+                const orgs = await fetchOrgs();
+                if (orgs.length > 0) {
+                    const orgId = orgs[0]._id;
+                    // 2. Fetch Apps with Org ID
+                    const data = await fetchApps(orgId);
+                    console.log('Loaded Apps for Dashboard:', data);
+                    setApps(data);
+                }
             } catch (err) {
                 console.error("Failed to fetch apps", err);
             }

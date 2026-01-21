@@ -310,10 +310,10 @@ export default function AppDashboard() {
                                 <ApiKeyDisplay label="Secret Key" value={keys.secretKey || '...'} />
 
                                 <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                                    <p className="text-xs text-blue-300 flex items-start gap-2">
+                                    <div className="text-xs text-blue-300 flex items-start gap-2">
                                         <div className="bg-blue-500 rounded-full w-1.5 h-1.5 mt-1 shrink-0" />
                                         <span>Requests using <strong>Test</strong> keys will not process real charges.</span>
-                                    </p>
+                                    </div>
                                 </div>
                             </motion.div>
                         </div>

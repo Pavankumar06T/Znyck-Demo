@@ -161,16 +161,27 @@ connectDB().then(async () => {
 
             const appIds = appsToSeed.map(a => a.staticId);
 
-            // Clean up ANY existing apps with these IDs (across any Org) to prevent duplicate key errors
-            // Also clean up by name within this org to be safe
+            // Clean up ONLY legacy apps (by name) that conflict but don't match our static IDs
+            // Do NOT delete by appId, as that wipes the good data!
             await Application.deleteMany({
-                $or: [
-                    { appId: { $in: appIds } },
-                    { organization: orgId, name: { $in: ['Znyck Demo App', 'Znyck E-Books', 'Znyck Freelance', 'Znyck Gear', 'E-Book', 'Freelance', 'Product'] } }
-                ]
+                organization: orgId,
+                name: { $in: ['Znyck Demo App', 'Znyck E-Books', 'Znyck Freelance', 'Znyck Gear'] },
+                appId: { $nin: appIds } // Safety: only delete if it's NOT one of our static ones
             });
 
             for (const app of appsToSeed) {
+                // Check if app exists by static ID
+                const existing = await Application.findOne({ appId: app.staticId });
+
+                if (existing) {
+                    console.log(`✨ App exists: ${app.name} (${app.staticId}) - Preserving ID: ${existing._id}`);
+                    // Optional: Update fields if needed, but critical is keeping _id
+                    // existing.name = app.name;
+                    // existing.save();
+                    continue;
+                }
+
+                // Create only if missing
                 await Application.create({
                     name: app.name,
                     organization: orgId,

@@ -1,6 +1,8 @@
 const PaymentService = require('../services/PaymentService');
 const Transaction = require('../models/Transaction');
 const Product = require('../models/Product');
+// Explicitly require Application model to ensure it is registered for populate
+const Application = require('../../app/models/Application');
 const mongoose = require('mongoose');
 
 class PaymentController {
@@ -145,8 +147,15 @@ class PaymentController {
             } else {
                 // If it was a mock product, try to assign to the demo org
                 const Organization = require('../../core/models/Organization');
-                const demoOrg = await Organization.findOne({ name: 'Acme Corp (Demo)' });
-                if (demoOrg) merchantOrgId = demoOrg._id;
+                // Find the Org that actually owns the seeded apps (to avoid duplicate Org issues)
+                const apps = await Application.findOne({ name: 'E-Book' });
+                if (apps) {
+                    merchantOrgId = apps.organization;
+                    console.log('[VerifyOrder] Auto-detected Org ID from valid App:', merchantOrgId);
+                } else {
+                    const demoOrg = await Organization.findOne({ name: 'Acme Corp' });
+                    if (demoOrg) merchantOrgId = demoOrg._id;
+                }
             }
 
             // App context: Match Product Category to App Name
@@ -162,15 +171,20 @@ class PaymentController {
                     if (product.category === 'Product') targetAppName = 'Product';
                 }
 
+                console.log(`[VerifyOrder] OrgID: ${merchantOrgId}, TargetApp: ${targetAppName}`);
+
                 app = await Application.findOne({
                     organization: merchantOrgId,
                     name: targetAppName
                 });
+                console.log(`[VerifyOrder] Found App by Name? ${app ? app._id : 'NO'}`);
             }
 
             if (!app) {
+                console.log('[VerifyOrder] App not found by name, attempting fallback...');
                 // Fallback: try finding any of the known demo apps, or just the first one
                 app = await Application.findOne({ organization: merchantOrgId });
+                console.log(`[VerifyOrder] Fallback App: ${app ? app.name : 'NONE'}`);
             }
 
             // 3. Create Transaction Record
@@ -255,7 +269,27 @@ class PaymentController {
             const transactions = await Transaction.find(query)
                 .sort({ createdAt: -1 })
                 .limit(50)
-                .populate('application', 'name');
+                .populate('application', 'name appId');
+
+            console.log(`[API] listTransactions found ${transactions.length} records`);
+
+            // Fallback: If populate failed (application is null), try to manually fetch
+            // But we can't easily iterate and modify since 'transactions' contains Mongoose docs.
+            // We need to verify if validation works now.
+
+            if (transactions.length > 0) {
+                console.log('[API] First TX Application:', transactions[0].application);
+                if (!transactions[0].application) {
+                    console.log('[API] Populated application is NULL. Verifying raw ID...');
+                    const rawTx = await Transaction.findById(transactions[0]._id);
+                    console.log('[API] Raw TX Application ID:', rawTx ? rawTx.application : 'N/A');
+
+                    if (rawTx && rawTx.application) {
+                        const foundApp = await Application.findById(rawTx.application);
+                        console.log('[API] Manual Find Application:', foundApp ? foundApp.name : 'Does Not Exist');
+                    }
+                }
+            }
 
             res.json(transactions);
         } catch (error) {
