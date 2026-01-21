@@ -70,8 +70,8 @@ const CreateAppModal = ({ isOpen, onClose, onCreated, orgId }) => {
                                     type="button"
                                     onClick={() => setType(t)}
                                     className={`p-3 rounded-lg border flex items-center justify-center space-x-2 transition-all ${type === t
-                                            ? 'bg-blue-600/20 border-blue-500 text-blue-400'
-                                            : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'
+                                        ? 'bg-blue-600/20 border-blue-500 text-blue-400'
+                                        : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'
                                         }`}
                                 >
                                     <TypeIcon type={t} />
@@ -178,7 +178,7 @@ export default function AppsList() {
     }, []);
 
     const handleAppClick = (appId) => {
-        navigate(`/org/${orgId}/apps/${appId}`);
+        navigate(`/org/${orgId}/app/${appId}/dashboard`);
     };
 
     return (

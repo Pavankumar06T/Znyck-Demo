@@ -173,7 +173,7 @@ export default function PaymentsAppsList() {
                             key={app._id}
                             app={app}
                             metrics={stats[app._id]}
-                            onClick={() => navigate(`/org/${orgId}/apps/${app.appId}`)}
+                            onClick={() => navigate(`/org/${orgId}/app/${app.appId}/dashboard`)}
                         />
                     ))}
                 </div>
