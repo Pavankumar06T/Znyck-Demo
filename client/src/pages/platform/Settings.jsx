@@ -3,12 +3,12 @@ import { Building2, Mail, Globe, Palette, Save } from 'lucide-react';
 import { usePlatform } from '../../layouts/PlatformLayout';
 
 const Section = ({ title, icon: Icon, children }) => (
-    <div className="bg-[#1c1f2e] border border-white/5 rounded-xl p-6 mb-6">
-        <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
-            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+    <div className="bg-white dark:bg-[#1c1f2e] border border-slate-200 dark:border-white/5 rounded-xl p-6 mb-6 shadow-sm dark:shadow-none transition-colors duration-300">
+        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 dark:border-white/5 pb-4">
+            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400">
                 <Icon size={20} />
             </div>
-            <h3 className="text-lg font-bold text-white">{title}</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
         </div>
         {children}
     </div>
@@ -16,12 +16,12 @@ const Section = ({ title, icon: Icon, children }) => (
 
 const InputField = ({ label, value, onChange, placeholder, type = "text" }) => (
     <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-400 mb-1.5">{label}</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1.5">{label}</label>
         <input
             type={type}
             value={value}
             onChange={onChange}
-            className="w-full bg-[#0f1117] border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors placeholder:text-gray-600"
+            className="w-full bg-slate-50 dark:bg-[#0f1117] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-gray-600"
             placeholder={placeholder}
         />
     </div>
@@ -93,8 +93,8 @@ export default function Settings() {
         <div className="max-w-4xl mx-auto">
             <header className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Settings</h1>
-                    <p className="text-gray-400">Manage your organization profile and preferences.</p>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Settings</h1>
+                    <p className="text-slate-600 dark:text-gray-400">Manage your organization profile and preferences.</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -130,11 +130,11 @@ export default function Settings() {
 
             <Section title="Branding" icon={Palette}>
                 <div className="flex items-start gap-6">
-                    <div className="w-24 h-24 rounded-xl bg-[#0f1117] border border-white/10 flex items-center justify-center text-gray-500 cursor-pointer hover:border-blue-500/50 transition-colors">
+                    <div className="w-24 h-24 rounded-xl bg-slate-50 dark:bg-[#0f1117] border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 dark:text-gray-500 cursor-pointer hover:border-blue-500/50 transition-colors">
                         <span className="text-xs">Upload Logo</span>
                     </div>
                     <div className="flex-1">
-                        <p className="text-sm text-gray-400 mb-4">
+                        <p className="text-sm text-slate-600 dark:text-gray-400 mb-4">
                             Upload your organization logo to be displayed on checkout pages and invoices.
                             Recommended size: 512x512px (PNG).
                         </p>

@@ -3,7 +3,7 @@ import { Book, Briefcase, ShoppingBag, Wallet, CreditCard, ExternalLink } from '
 import { Link, useNavigate } from 'react-router-dom';
 
 const CategoryCard = ({ title, icon: Icon, colorClass, onBuy }) => (
-    <div className="bg-[#1c1f2e] border border-white/5 rounded-xl p-6 hover:border-blue-500/30 transition-all group flex flex-col h-full relative overflow-hidden">
+    <div className="bg-white dark:bg-[#1c1f2e] border border-slate-200 dark:border-white/5 rounded-xl p-6 hover:border-blue-500/30 transition-all group flex flex-col h-full relative overflow-hidden shadow-sm dark:shadow-none duration-300">
         <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colorClass} opacity-5 rounded-bl-full pointer-events-none`} />
 
         <div className="flex justify-between items-start mb-6">
@@ -12,8 +12,8 @@ const CategoryCard = ({ title, icon: Icon, colorClass, onBuy }) => (
             </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-        <p className="text-sm text-gray-500 mb-8 flex-1">
+        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
+        <p className="text-sm text-slate-500 dark:text-gray-500 mb-8 flex-1">
             Manage your {title.toLowerCase()} business, view sales, and process new orders.
         </p>
 
@@ -71,8 +71,8 @@ export default function DashboardOverview() {
     return (
         <div className="max-w-7xl mx-auto">
             <div className="mb-10">
-                <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-                <p className="text-gray-400">Select a category to manage or purchase via test mode.</p>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Dashboard</h1>
+                <p className="text-slate-600 dark:text-gray-400">Select a category to manage or purchase via test mode.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -137,23 +137,23 @@ const DemoStore = () => {
 
 
     return (
-        <div className="min-h-screen bg-black text-white p-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-black text-slate-900 dark:text-white p-8 transition-colors duration-300">
             <header className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
                 <div className="flex items-center gap-4">
-                    <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                    <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-600">
                         ZNYCK DEMO STORE
                     </h1>
                 </div>
 
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                    <div className="flex bg-gray-900 rounded-full p-1 border border-gray-800">
+                    <div className="flex bg-white dark:bg-gray-900 rounded-full p-1 border border-slate-200 dark:border-gray-800 shadow-sm dark:shadow-none">
                         {['All', 'E-Book', 'Freelance', 'Products'].map(cat => (
                             <button
                                 key={cat}
                                 onClick={() => setFilter(cat)}
                                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${filter === cat
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                                    : 'text-gray-400 hover:text-white'
+                                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                             >
                                 {cat}
@@ -162,14 +162,14 @@ const DemoStore = () => {
                     </div>
 
                     {user ? (
-                        <div className="flex items-center gap-4 pl-6 border-l border-gray-800">
+                        <div className="flex items-center gap-4 pl-6 border-l border-slate-200 dark:border-gray-800">
                             <div className="text-right hidden md:block">
-                                <div className="text-sm font-bold text-white">{user.name || 'Customer'}</div>
-                                <div className="text-xs text-green-400 uppercase tracking-wider font-bold">Logged In</div>
+                                <div className="text-sm font-bold text-slate-900 dark:text-white">{user.name || 'Customer'}</div>
+                                <div className="text-xs text-green-600 dark:text-green-400 uppercase tracking-wider font-bold">Logged In</div>
                             </div>
                             <button
                                 onClick={handleSignOut}
-                                className="bg-red-500/10 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                                className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
                             >
                                 Sign Out
                             </button>
@@ -177,7 +177,7 @@ const DemoStore = () => {
                     ) : (
                         <button
                             onClick={() => navigate('/login')}
-                            className="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-gray-200 transition-colors"
+                            className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-2 rounded-full font-bold hover:bg-slate-800 dark:hover:bg-gray-200 transition-colors"
                         >
                             Log In
                         </button>
@@ -195,9 +195,9 @@ const DemoStore = () => {
                                 key={product._id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:shadow-2xl hover:border-blue-500/30 transition-all flex flex-col"
+                                className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-6 hover:shadow-2xl hover:border-blue-500/30 transition-all flex flex-col"
                             >
-                                <div className="h-48 bg-gray-800 rounded-xl mb-6 flex items-center justify-center text-gray-600">
+                                <div className="h-48 bg-slate-50 dark:bg-gray-800 rounded-xl mb-6 flex items-center justify-center text-slate-400 dark:text-gray-600">
                                     {product.image ? (
                                         <img src={product.image} alt={product.name} className="h-full w-full object-cover rounded-xl" />
                                     ) : (
@@ -205,17 +205,17 @@ const DemoStore = () => {
                                     )}
                                 </div>
                                 <div className="mb-4">
-                                    <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">{product.category}</span>
-                                    <h3 className="text-xl font-bold mt-1">{product.name}</h3>
-                                    <p className="text-gray-400 text-sm mt-2 line-clamp-2">{product.description || "No description available."}</p>
+                                    <span className="text-xs font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider">{product.category}</span>
+                                    <h3 className="text-xl font-bold mt-1 text-slate-900 dark:text-white">{product.name}</h3>
+                                    <p className="text-slate-500 dark:text-gray-400 text-sm mt-2 line-clamp-2">{product.description || "No description available."}</p>
                                 </div>
                                 <div className="mt-auto flex justify-between items-center">
-                                    <span className="text-2xl font-bold">
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
                                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: product.currency }).format(product.price / 100)}
                                     </span>
                                     <button
                                         onClick={() => handleBuy(product)}
-                                        className="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors"
+                                        className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-2 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-gray-200 transition-colors"
                                     >
                                         Buy Now
                                     </button>

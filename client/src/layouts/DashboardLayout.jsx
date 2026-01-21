@@ -7,7 +7,7 @@ const SidebarItem = ({ icon: Icon, label, to, active }) => (
         to={to}
         className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
             ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-            : 'text-gray-400 hover:text-white hover:bg-white/5'
+            : 'text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-white/5'
             }`}
     >
         <Icon size={20} />
@@ -32,14 +32,14 @@ export default function DashboardLayout() {
     };
 
     return (
-        <div className="flex h-screen bg-[#0f1117] text-white overflow-hidden">
+        <div className="flex h-screen bg-gray-50 dark:bg-[#0f1117] text-slate-900 dark:text-white overflow-hidden transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-white/10 flex flex-col">
+            <aside className="w-64 border-r border-slate-200 dark:border-white/10 flex flex-col bg-white dark:bg-[#0f1117] transition-colors duration-300">
                 <div className="p-6">
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500 bg-clip-text text-transparent">
                         Znyck Demo
                     </h1>
-                    <p className="text-xs text-gray-500 mt-1">Platform Console</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-500 mt-1">Platform Console</p>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2">
@@ -51,10 +51,10 @@ export default function DashboardLayout() {
                     />
                 </nav>
 
-                <div className="p-4 border-t border-white/10">
+                <div className="p-4 border-t border-slate-200 dark:border-white/10">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:text-red-400 hover:bg-white/5 w-full transition-colors"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-white/5 w-full transition-colors"
                     >
                         <LogOut size={20} />
                         <span className="font-medium">Sign Out</span>
@@ -64,15 +64,15 @@ export default function DashboardLayout() {
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
-                <header className="h-16 border-b border-white/10 flex items-center justify-between px-8 bg-[#0f1117]/50 backdrop-blur sticky top-0 z-10">
-                    <div className="text-sm breadcrumbs text-gray-400 flex items-center gap-2">
-                        Organization: <span className="text-white font-medium">Znyck Demo</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full uppercase font-bold bg-purple-500/20 text-purple-400">
+                <header className="h-16 border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-8 bg-white/80 dark:bg-[#0f1117]/50 backdrop-blur sticky top-0 z-10 transition-colors duration-300">
+                    <div className="text-sm breadcrumbs text-slate-500 dark:text-gray-400 flex items-center gap-2">
+                        Organization: <span className="text-slate-900 dark:text-white font-medium">Znyck Demo</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full uppercase font-bold bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
                             Admin
                         </span>
                     </div>
                     <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                             A
                         </div>
                     </div>
