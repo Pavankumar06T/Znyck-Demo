@@ -81,13 +81,13 @@ const CategoryStore = () => {
             <div className="mb-8 flex items-center gap-4">
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                    className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
                 >
                     <ArrowLeft size={24} />
                 </button>
                 <div>
-                    <h1 className="text-3xl font-bold text-white">{categoryName} Store</h1>
-                    <p className="text-gray-400">Browse and purchase {categoryName.toLowerCase()} items (Test Mode)</p>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{categoryName} Store</h1>
+                    <p className="text-slate-600 dark:text-gray-400">Browse and purchase {categoryName.toLowerCase()} items (Test Mode)</p>
                 </div>
             </div>
 
@@ -96,18 +96,18 @@ const CategoryStore = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {products.map(product => (
-                        <div key={product._id} className="bg-[#1c1f2e] border border-white/5 rounded-xl p-6 hover:border-blue-500/30 transition-all flex flex-col group">
+                        <div key={product._id} className="bg-white dark:bg-[#1c1f2e] border border-slate-200 dark:border-white/5 rounded-xl p-6 hover:border-blue-500/30 transition-all flex flex-col group shadow-sm dark:shadow-none duration-300">
                             <div className="flex justify-between items-start mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
                                     <ShoppingCart size={24} />
                                 </div>
-                                <span className="text-sm font-mono text-white bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                <span className="text-sm font-mono text-slate-700 dark:text-white bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full border border-slate-200 dark:border-white/5">
                                     {product.currency} {(product.price / 100).toFixed(2)}
                                 </span>
                             </div>
 
-                            <h3 className="text-xl font-bold text-white mb-2">{product.name}</h3>
-                            <p className="text-sm text-gray-500 mb-6 flex-1">{product.description}</p>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{product.name}</h3>
+                            <p className="text-sm text-slate-500 dark:text-gray-500 mb-6 flex-1">{product.description}</p>
 
                             <button
                                 onClick={() => setSelectedProduct(product)}
@@ -139,9 +139,9 @@ const CategoryStore = () => {
             {/* Checkout Loading Overlay (Global) */}
             {checkoutLoading && (
                 <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-                    <div className="bg-[#1c1f2e] p-6 rounded-xl flex items-center gap-4">
+                    <div className="bg-white dark:bg-[#1c1f2e] p-6 rounded-xl flex items-center gap-4 shadow-2xl">
                         <Loader2 className="animate-spin text-blue-500" size={24} />
-                        <span className="text-white font-medium">Initializing Secure Payment...</span>
+                        <span className="text-slate-900 dark:text-white font-medium">Initializing Secure Payment...</span>
                     </div>
                 </div>
             )}

@@ -93,13 +93,13 @@ export default function ZnyckPay() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f1117] text-white flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-white flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
             {/* Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none"></div>
 
-            <div className="w-full max-w-md bg-[#1c1f2e] border border-white/10 rounded-2xl p-8 shadow-2xl relative z-10">
+            <div className="w-full max-w-md bg-white dark:bg-[#1c1f2e] border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-2xl relative z-10 transition-colors duration-300">
                 {/* Back Link */}
-                <Link to="/" className="inline-flex items-center space-x-2 text-gray-500 hover:text-white transition-colors mb-6 text-sm">
+                <Link to="/" className="inline-flex items-center space-x-2 text-slate-500 dark:text-gray-500 hover:text-slate-900 dark:hover:text-white transition-colors mb-6 text-sm">
                     <ArrowLeft size={16} />
                     <span>Back to Home</span>
                 </Link>
@@ -109,34 +109,34 @@ export default function ZnyckPay() {
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                         <Zap size={24} className="text-white" />
                     </div>
-                    <span className="font-bold text-2xl tracking-tight">Znyck Pay</span>
+                    <span className="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">Znyck Pay</span>
                 </div>
 
                 {/* TAB SWITCHER */}
-                <div className="flex items-center space-x-8 mb-8 border-b border-white/10">
+                <div className="flex items-center space-x-8 mb-8 border-b border-slate-200 dark:border-white/10">
                     <button
                         onClick={() => setIsLogin(true)}
-                        className="relative pb-3 px-2 text-base font-medium transition-colors outline-none flex-1 text-center"
-                        style={{ color: isLogin ? 'white' : '#6b7280' }}
+                        className={`relative pb-3 px-2 text-base font-medium transition-colors outline-none flex-1 text-center ${isLogin ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-gray-500'
+                            }`}
                     >
                         Sign In
                         {isLogin && (
                             <motion.div
                                 layoutId="activeTab"
-                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full"
+                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-500 rounded-full"
                             />
                         )}
                     </button>
                     <button
                         onClick={() => setIsLogin(false)}
-                        className="relative pb-3 px-2 text-base font-medium transition-colors outline-none flex-1 text-center"
-                        style={{ color: !isLogin ? 'white' : '#6b7280' }}
+                        className={`relative pb-3 px-2 text-base font-medium transition-colors outline-none flex-1 text-center ${!isLogin ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-gray-500'
+                            }`}
                     >
                         Sign Up
                         {!isLogin && (
                             <motion.div
                                 layoutId="activeTab"
-                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full"
+                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-500 rounded-full"
                             />
                         )}
                     </button>
@@ -154,15 +154,15 @@ export default function ZnyckPay() {
                         >
                             <form onSubmit={handleLoginSubmit} className="space-y-5">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">Email Address</label>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-gray-400">Email Address</label>
                                     <div className="relative group">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-500 transition-colors" size={18} />
                                         <input
                                             type="email"
                                             name="email"
                                             value={loginData.email}
                                             onChange={handleLoginChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="name@example.com"
                                             required
                                         />
@@ -170,15 +170,15 @@ export default function ZnyckPay() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">Password</label>
+                                    <label className="text-sm font-medium text-slate-700 dark:text-gray-400">Password</label>
                                     <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-500 transition-colors" size={18} />
                                         <input
                                             type="password"
                                             name="password"
                                             value={loginData.password}
                                             onChange={handleLoginChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-xl py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="••••••••"
                                             required
                                         />
@@ -207,40 +207,40 @@ export default function ZnyckPay() {
                             <form onSubmit={handleRegisterSubmit} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Full Name</label>
+                                        <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Full Name</label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleRegisterChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 px-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 px-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="John Doe"
                                             required
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Nickname</label>
+                                        <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Nickname</label>
                                         <input
                                             type="text"
                                             name="nickname"
                                             value={formData.nickname}
                                             onChange={handleRegisterChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 px-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 px-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="Johnny"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Gmail ID</label>
+                                    <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Gmail ID</label>
                                     <div className="relative group">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors" size={16} />
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-500 transition-colors" size={16} />
                                         <input
                                             type="email"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleRegisterChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="john@gmail.com"
                                             required
                                         />
@@ -249,30 +249,30 @@ export default function ZnyckPay() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Country</label>
+                                        <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Country</label>
                                         <div className="relative group">
-                                            <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors" size={16} />
+                                            <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-500 transition-colors" size={16} />
                                             <input
                                                 type="text"
                                                 name="country"
                                                 value={formData.country}
                                                 onChange={handleRegisterChange}
-                                                className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                                className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                                 placeholder="India"
                                                 required
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Contact</label>
+                                        <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Contact</label>
                                         <div className="relative group">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors" size={16} />
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-500 transition-colors" size={16} />
                                             <input
                                                 type="tel"
                                                 name="contact"
                                                 value={formData.contact}
                                                 onChange={handleRegisterChange}
-                                                className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 pl-11 pr-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                                className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 pl-11 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                                 placeholder="+91..."
                                                 required
                                             />
@@ -282,25 +282,25 @@ export default function ZnyckPay() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Password</label>
+                                        <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Password</label>
                                         <input
                                             type="password"
                                             name="password"
                                             value={formData.password}
                                             onChange={handleRegisterChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 px-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 px-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="••••••••"
                                             required
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Confirm</label>
+                                        <label className="text-xs font-medium text-slate-700 dark:text-gray-400 uppercase tracking-wider">Confirm</label>
                                         <input
                                             type="password"
                                             name="confirmPassword"
                                             value={formData.confirmPassword}
                                             onChange={handleRegisterChange}
-                                            className="w-full bg-[#13141b] border border-[#2d2f3b] rounded-lg py-3 px-4 text-white placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            className="w-full bg-slate-50 dark:bg-[#13141b] border border-slate-200 dark:border-[#2d2f3b] rounded-lg py-3 px-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
                                             placeholder="••••••••"
                                             required
                                         />
