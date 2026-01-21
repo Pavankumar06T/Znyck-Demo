@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, LogIn } from 'lucide-react';
-import api from '../services/api';
+import { User, Lock, ArrowRight, Loader2, AlertCircle, LogIn, Mail } from 'lucide-react';
+import api from '../../services/api';
+import { useGlobal } from '../../context/GlobalContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -31,7 +33,7 @@ const Login = () => {
                 return;
             }
 
-            navigate('/user-space');
+            navigate('/org/:orgId/app/:appId/dashboard');
         } catch (err) {
             alert(err.response?.data?.error || 'Login failed');
         } finally {

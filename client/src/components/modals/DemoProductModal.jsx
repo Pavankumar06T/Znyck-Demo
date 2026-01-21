@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, X, Loader2, CreditCard } from 'lucide-react';
-import api from '../services/api';
-import { useCheckout } from '../hooks/useCheckout';
+import api from '../../services/api';
+import { useCheckout } from '../../hooks/useCheckout';
 
 const DemoProductModal = ({ category, onClose }) => {
     const [products, setProducts] = useState([]);

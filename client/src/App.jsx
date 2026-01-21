@@ -2,43 +2,35 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ZnyckPay from './pages/ZnyckPay';
-import UserSpace from './pages/UserSpace';
-import Settings from './pages/platform/Settings';
-import PaymentsAppsList from './pages/platform/PaymentsAppsList';
+// Pages
+import Home from './pages/public/Home';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
 
 // Platform Pages
-import DashboardOverview from './pages/platform/DashboardOverview';
-import AppList from './pages/platform/AppList';
+import Overview from './pages/platform/Overview';
+import AdminAppList from './pages/platform/AdminAppList';
 import ProductList from './pages/platform/ProductList';
 import CategoryStore from './pages/platform/CategoryStore';
 
-// Mock Pages
-import CheckoutDemo from './pages/mock/CheckoutDemo';
-import DemoStore from './pages/DemoStore';
+import CheckoutDemo from './pages/public/CheckoutDemo';
 
-const PrivateRoute = ({ children }) => {
-    return children;
-};
 
 // Context
 import { GlobalProvider } from './context/GlobalContext';
 
 // Layouts
 import MainLayout from './layouts/MainLayout';
-import PlatformLayout from './layouts/PlatformLayout';
+
 import DashboardLayout from './layouts/DashboardLayout';
 
 // New Architecture Pages
-import AppDashboard from './pages/app/AppDashboard';
-import AppTransactions from './pages/app/AppTransactions';
-import AppWebhooks from './pages/app/AppWebhooks';
-import AppDevelopers from './pages/app/AppDevelopers';
-import AppSettings from './pages/app/AppSettings';
-import AppsList from './pages/app/AppsList';
+import AppDashboard from './pages/console/AppDashboard';
+import AppTransactions from './pages/console/AppTransactions';
+import AppWebhooks from './pages/console/AppWebhooks';
+import AppDevelopers from './pages/console/AppDevelopers';
+import AppSettings from './pages/console/AppSettings';
+import AppsList from './pages/workspace/AppsList';
 
 function App() {
     useEffect(() => {
@@ -53,7 +45,7 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-                    <Route path="/znyck-pay" element={<ZnyckPay />} />
+                    
 
                     {/* NEW: Core Application Routes */}
                     <Route path="/org/:orgId/app/:appId" element={<MainLayout />}>
@@ -65,26 +57,22 @@ function App() {
                         <Route path="settings" element={<AppSettings />} />
                     </Route>
 
-                    {/* Bootstrap Route (Redirects Only) */}
-                    <Route path="/user-space" element={<UserSpace />} />
-
+                   
                     {/* Organization Root (Apps List) */}
                     <Route path="/org/:orgId/apps" element={<AppsList />} />
 
-                    {/* Public/Mock Routes */}
-                    <Route path="/demo" element={<DemoStore />} />
                     <Route path="/apps/:appId" element={<CheckoutDemo />} />
-                    <Route path="/mock-shop" element={<Navigate to={`/apps/demo`} />} />
+                    
 
                     {/* Dashboard Routes - No Auth Guard */}
                     <Route path="/dashboard" element={<DashboardLayout />}>
-                        <Route index element={<DashboardOverview />} />
-                        <Route path="apps" element={<AppList />} />
+                        <Route index element={<Overview />} />
+                        <Route path="apps" element={<AdminAppList />} />
                         <Route path="products" element={<ProductList />} />
                         <Route path="store/:category" element={<CategoryStore />} />
                     </Route>
 
-                    <Route path="*" element={<Navigate to="/dashboard" />} />
+                    <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             </Router>
         </GlobalProvider>
