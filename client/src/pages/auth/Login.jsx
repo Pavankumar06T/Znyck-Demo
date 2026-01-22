@@ -33,7 +33,7 @@ const Login = () => {
                 return;
             }
 
-            navigate('/org/:orgId/app/:appId/dashboard');
+            navigate(`/org/${response.data.tenantId}/apps`);
         } catch (err) {
             alert(err.response?.data?.error || 'Login failed');
         } finally {

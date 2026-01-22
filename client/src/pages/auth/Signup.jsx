@@ -66,7 +66,7 @@ const Signup = () => {
                 return;
             }
 
-            navigate('/user-space');
+            navigate(`/org/${response.data.tenantId}/apps`);
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.error || 'Signup failed');

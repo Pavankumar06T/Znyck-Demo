@@ -33,44 +33,52 @@ class AuthController {
                 bankDetails
             });
 
-            // 3. Create Tenant/Organization
-            // If customer, we create a personal workspace
-            const orgName = companyName || (role === 'customer' ? `${user.name}'s Space` : `${user.name}'s Org`);
-            const userRole = role === 'customer' ? 'viewer' : 'admin'; // Map customer to viewer in Org, or just use custom string if schema allows
+            // 3. Find or Create Default Tenant/Organization
+            const DEFAULT_ORG_NAME = "Znyck Demo Workspace";
+            let org = await Organization.findOne({ name: DEFAULT_ORG_NAME });
 
-            const org = await Organization.create({
-                name: orgName,
-                owner: user._id,
-                members: [{ user: user._id, role: userRole }],
-                settings: { saasType: saasType || 'generic' }
-            });
+            if (!org) {
+                // Create if it doesn't exist (First user ever)
+                org = await Organization.create({
+                    name: DEFAULT_ORG_NAME,
+                    owner: user._id,
+                    members: [{ user: user._id, role: 'admin' }],
+                    settings: { saasType: 'generic' }
+                });
 
+                // Seed Default Products only for the first time
+                const Product = require('../../models/Product');
+                const defaultProducts = [
+                    {
+                        name: "The Art of Coding",
+                        description: "Master the skills you need to succeed in the modern digital economy.",
+                        price: 2900, // ₹29.00
+                        currency: "INR",
+                        category: "E-Book",
+                        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800",
+                        organization: org._id
+                    },
+                    {
+                        name: "Brand Identity Kit",
+                        description: "Professional templates to jumpstart your next big project.",
+                        price: 4900, // ₹49.00
+                        currency: "INR",
+                        category: "Product",
+                        image: "https://images.unsplash.com/photo-1626785774573-4b799314346d?auto=format&fit=crop&q=80&w=800",
+                        organization: org._id
+                    }
+                ];
+                await Product.insertMany(defaultProducts);
 
-
-            // 5. Seed Default Products for this Merchant (So they have inventory to sell in Demo)
-            const Product = require('../../models/Product');
-            const defaultProducts = [
-                {
-                    name: "The Art of " + (saasType === 'freelance-saas' ? "Freelancing" : "Coding"),
-                    description: "Master the skills you need to succeed in the modern digital economy.",
-                    price: 2900, // ₹29.00
-                    currency: "INR",
-                    category: "E-Book",
-                    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800",
-                    organization: org._id
-                },
-                {
-                    name: saasType === 'project-saas' ? "Pro Project Template" : "Brand Identity Kit",
-                    description: "Professional templates to jumpstart your next big project.",
-                    price: 4900, // ₹49.00
-                    currency: "INR",
-                    category: "Product",
-                    image: "https://images.unsplash.com/photo-1626785774573-4b799314346d?auto=format&fit=crop&q=80&w=800",
-                    organization: org._id
+            } else {
+                // Add user to existing Default Org
+                // Check if already a member to prevent duplicates (though logic shouldn't allow signup if user exists)
+                const isMember = org.members.some(m => m.user.toString() === user._id.toString());
+                if (!isMember) {
+                    org.members.push({ user: user._id, role: role === 'customer' ? 'viewer' : 'admin' });
+                    await org.save();
                 }
-            ];
-
-            await Product.insertMany(defaultProducts);
+            }
 
             // 6. Generate Token
             const token = jwt.sign(
