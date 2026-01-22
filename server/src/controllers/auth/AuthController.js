@@ -85,7 +85,6 @@ class AuthController {
             res.status(201).json({
                 token,
                 tenantId: org._id,
-                appId: app.appId,
                 role: role || 'admin',
                 saasType: org.settings.saasType
             });

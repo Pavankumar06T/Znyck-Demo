@@ -51,7 +51,7 @@ const Signup = () => {
                 return;
             }
 
-            navigate(`/org/${response.data.tenantId}/apps`);
+            navigate(`/org/${response.data.tenantId}/app/app_product_demo_789/dashboard`);
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.error || 'Signup failed');
