@@ -8,7 +8,7 @@ class AuthController {
     // POST /api/v1/auth/signup
     async signup(req, res) {
         try {
-            const { email, password, companyName, name, country, contact, panNumber, bankDetails, website } = req.body;
+            const { email, password, name } = req.body;
 
             // Defaults since removed from UI
             const role = 'admin';
@@ -26,17 +26,12 @@ class AuthController {
                 email,
                 password: hashedPassword,
                 name: name || email.split('@')[0], // Use provided name or default
-                country,
-                contact,
-                website,
-                panNumber,
-                bankDetails
             });
 
             // 3. Create Tenant/Organization
             // If customer, we create a personal workspace
-            const orgName = companyName || (role === 'customer' ? `${user.name}'s Space` : `${user.name}'s Org`);
-            const userRole = role === 'customer' ? 'viewer' : 'admin'; // Map customer to viewer in Org, or just use custom string if schema allows
+            const orgName = `${user.name}'s Org`;
+            const userRole = 'admin';
 
             const org = await Organization.create({
                 name: orgName,
@@ -45,6 +40,29 @@ class AuthController {
                 settings: { saasType: saasType || 'generic' }
             });
 
+            // 4. Create Default Application
+            const Application = require('../../app/models/Application');
+            const crypto = require('crypto');
+
+            const generateKey = (prefix) => `${prefix}_${crypto.randomBytes(24).toString('hex')}`;
+
+            const app = await Application.create({
+                name: "My First App",
+                organization: org._id,
+                type: 'web',
+                description: 'Default application created on signup',
+                appId: `app_${crypto.randomBytes(6).toString('hex')}`,
+                apiKeys: {
+                    test: {
+                        publicKey: generateKey('pk_test'),
+                        secretKey: generateKey('sk_test')
+                    },
+                    live: {
+                        publicKey: generateKey('pk_live'),
+                        secretKey: generateKey('sk_live')
+                    }
+                }
+            });
 
 
             // 5. Seed Default Products for this Merchant (So they have inventory to sell in Demo)
@@ -82,6 +100,7 @@ class AuthController {
             res.status(201).json({
                 token,
                 tenantId: org._id,
+                appId: app.appId,
                 role: role || 'admin',
                 saasType: org.settings.saasType
             });
