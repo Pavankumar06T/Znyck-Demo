@@ -1,40 +1,36 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Layouts
-import DashboardLayout from './layouts/DashboardLayout';
-
 // Pages
 // Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ZnyckPay from './pages/ZnyckPay';
-import UserSpace from './pages/UserSpace';
-import PlatformLayout from './layouts/PlatformLayout';
-import Settings from './pages/platform/Settings';
-import PaymentsAppsList from './pages/platform/PaymentsAppsList';
-import AppLayout from './layouts/AppLayout';
-import AppOverview from './pages/platform/AppOverview';
-import AppKeys from './pages/platform/AppKeys';
+import Home from './pages/public/Home';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
 
 // Platform Pages
-import DashboardOverview from './pages/platform/DashboardOverview';
-import AppList from './pages/platform/AppList';
+import Overview from './pages/platform/Overview';
+import AdminAppList from './pages/platform/AdminAppList';
 import ProductList from './pages/platform/ProductList';
 import CategoryStore from './pages/platform/CategoryStore';
 
-// New App Pages
-import AppsList from './pages/app/AppsList';
-import AppDashboard from './pages/app/AppDashboard';
+import CheckoutDemo from './pages/public/CheckoutDemo';
 
-// Mock Pages
-import CheckoutDemo from './pages/mock/CheckoutDemo';
-import DemoStore from './pages/DemoStore';
 
-const PrivateRoute = ({ children }) => {
-    return children;
-};
+// Context
+import { GlobalProvider } from './context/GlobalContext';
+
+// Layouts
+import MainLayout from './layouts/MainLayout';
+
+import DashboardLayout from './layouts/DashboardLayout';
+
+// New Architecture Pages
+import AppDashboard from './pages/console/AppDashboard';
+import AppTransactions from './pages/console/AppTransactions';
+import AppWebhooks from './pages/console/AppWebhooks';
+import AppDevelopers from './pages/console/AppDevelopers';
+import AppSettings from './pages/console/AppSettings';
+import AppsList from './pages/workspace/AppsList';
 
 function App() {
     useEffect(() => {
@@ -42,52 +38,44 @@ function App() {
     }, []);
 
     return (
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Routes>
-                {/* Landing Page */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/znyck-pay" element={<ZnyckPay />} />
-                {/* User Space (Console) Routes */}
-                <Route path="/user-space" element={<PlatformLayout />}>
-                    <Route index element={<UserSpace />} />
-                    <Route path="settings" element={<Settings />} />
+        <GlobalProvider>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <Routes>
+                    {/* Landing Page */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    
 
-                    {/* Payments -> Apps List */}
-                    <Route path="payments" element={<PaymentsAppsList />} />
-
-                    {/* Individual App Details */}
-                    <Route path="apps/:appId" element={<AppLayout />}>
-                        <Route index element={<AppOverview />} />
-                        {/* Re-use placeholder/specific components */}
-                        <Route path="transactions" element={<div className="p-10 text-center text-gray-500">Transactions List Integration Pending</div>} />
-                        <Route path="keys" element={<AppKeys />} />
-                        <Route path="settings" element={<div className="p-10 text-center text-gray-500">App Settings Pending</div>} />
+                    {/* NEW: Core Application Routes */}
+                    <Route path="/org/:orgId/app/:appId" element={<MainLayout />}>
+                        <Route index element={<Navigate to="dashboard" />} />
+                        <Route path="dashboard" element={<AppDashboard />} />
+                        <Route path="transactions" element={<AppTransactions />} />
+                        <Route path="webhooks" element={<AppWebhooks />} />
+                        <Route path="developers" element={<AppDevelopers />} />
+                        <Route path="settings" element={<AppSettings />} />
                     </Route>
-                </Route>
 
-                {/* Public/Mock Routes */}
-                <Route path="/demo" element={<DemoStore />} />
-                <Route path="/apps/:appId" element={<CheckoutDemo />} />
-                <Route path="/mock-shop" element={<Navigate to={`/apps/demo`} />} />
+                   
+                    {/* Organization Root (Apps List) */}
+                    <Route path="/org/:orgId/apps" element={<AppsList />} />
 
-                {/* Dashboard Routes - No Auth Guard */}
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                    <Route index element={<DashboardOverview />} />
-                    <Route path="apps" element={<AppList />} />
-                    <Route path="products" element={<ProductList />} />
-                    <Route path="store/:category" element={<CategoryStore />} />
-                </Route>
+                    <Route path="/apps/:appId" element={<CheckoutDemo />} />
+                    
 
-                {/* Organization & App Context Routes */}
-                <Route path="/org/:orgId/apps" element={<AppsList />} />
-                <Route path="/org/:orgId/apps/:appId" element={<AppDashboard />} />
+                    {/* Dashboard Routes - No Auth Guard */}
+                    <Route path="/dashboard" element={<DashboardLayout />}>
+                        <Route index element={<Overview />} />
+                        <Route path="apps" element={<AdminAppList />} />
+                        <Route path="products" element={<ProductList />} />
+                        <Route path="store/:category" element={<CategoryStore />} />
+                    </Route>
 
-                {/* Catch all */}
-                <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
-        </Router>
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+            </Router>
+        </GlobalProvider>
     );
 }
 

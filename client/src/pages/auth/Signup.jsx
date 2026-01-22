@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Briefcase, ArrowRight, Sparkles, Phone, Globe, CreditCard, Building2, FileText } from 'lucide-react';
-import api from '../services/api';
+import { User, Mail, Lock, ArrowRight, Loader2, AlertCircle, Sparkles, Phone, Globe, Building2, CreditCard, Briefcase, FileText } from 'lucide-react';
+import api from '../../services/api';
+import { useGlobal } from '../../context/GlobalContext';
 
 const Signup = () => {
     // Basic Info

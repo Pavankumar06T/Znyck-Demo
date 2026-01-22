@@ -11,9 +11,19 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
+    const appId = localStorage.getItem('znyck_active_app_id');
+    const env = localStorage.getItem('znyck_env') || 'test';
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Inject Context Headers
+    if (appId) {
+        config.headers['X-Znyck-App-Id'] = appId;
+    }
+    config.headers['X-Znyck-Env'] = env;
+
     return config;
 });
 

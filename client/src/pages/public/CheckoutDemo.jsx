@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ShoppingBag, CreditCard, ShieldCheck, Globe, Code, Loader2, BookOpen, Briefcase, Monitor, X } from 'lucide-react';

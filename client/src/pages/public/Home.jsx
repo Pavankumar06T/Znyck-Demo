@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+    ArrowRight, Globe, Shield, Zap, Code2, Layers, CheckCircle,
+    Sun, Moon, CheckCircle2, PlayCircle, Lock, LayoutGrid, Terminal, Smartphone
+} from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Shield, Globe, Zap, ArrowRight, LayoutGrid, Terminal, CheckCircle2, PlayCircle, Lock, Smartphone, Moon, Sun } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Home() {
     const { theme, toggleTheme } = useTheme();

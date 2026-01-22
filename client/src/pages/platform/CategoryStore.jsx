@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 import api from '../../services/api';
 import { useCheckout } from '../../hooks/useCheckout';
-import StripePaymentModal from '../../components/StripePaymentModal';
-import PaymentMethodModal from '../../components/PaymentMethodModal';
+import StripePaymentModal from '../../components/modals/StripePaymentModal';
+import PaymentMethodModal from '../../components/modals/PaymentMethodModal';
 
 const CategoryStore = () => {
     const { category } = useParams();
