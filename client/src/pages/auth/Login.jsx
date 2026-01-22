@@ -20,6 +20,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
+            localStorage.clear();
             const response = await api.post('/auth/login', { email, password });
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify({
