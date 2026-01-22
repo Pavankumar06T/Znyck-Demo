@@ -1,0 +1,9 @@
+services:
+  frontend:
+    build:
+      args:
+        VITE_AUTH_ENABLED: "true"   # Enable auth in development
+        VITE_API_URL: "http://localhost:5000/api/v1"
+        VITE_ENV: "development"
+    ports:
+      - "3000:80"

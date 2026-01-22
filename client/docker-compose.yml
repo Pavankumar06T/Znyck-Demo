@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_AUTH_ENABLED: "false"  # Set to "true" to enable auth
+        VITE_API_URL: "https://api.znyck.com/api/v1"
+        VITE_ENV: "production"
     ports:
       - "3000:80"
     environment:
