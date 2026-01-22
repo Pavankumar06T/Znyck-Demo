@@ -1,8 +1,8 @@
-const PaymentService = require('../services/PaymentService');
-const Transaction = require('../models/Transaction');
-const Product = require('../models/Product');
+const PaymentService = require('../../services/PaymentService');
+const Transaction = require('../../models/Transaction');
+const Product = require('../../models/Product');
 // Explicitly require Application model to ensure it is registered for populate
-const Application = require('../../app/models/Application');
+const Application = require('../../models/Application');
 const mongoose = require('mongoose');
 
 class PaymentController {
@@ -42,7 +42,7 @@ class PaymentController {
             // Here we just use a hardcoded or env-based Key ID for the response
             // and use the Adapter to create the order on Razorpay.
 
-            const PaymentFactory = require('../factories/PaymentFactory');
+            const PaymentFactory = require('../../payment/factories/PaymentFactory');
             const adapter = PaymentFactory.getAdapter({
                 currency: product.currency,
                 provider: preferredProvider
@@ -119,7 +119,7 @@ class PaymentController {
             // Determine Provider based on input fields
             const provider = paymentIntentId ? 'stripe' : 'razorpay';
 
-            const PaymentFactory = require('../factories/PaymentFactory');
+            const PaymentFactory = require('../../payment/factories/PaymentFactory');
             const adapter = PaymentFactory.getAdapter({
                 currency: product ? product.currency : currency,
                 provider: provider
@@ -146,7 +146,7 @@ class PaymentController {
                 merchantOrgId = product.organization;
             } else {
                 // If it was a mock product, try to assign to the demo org
-                const Organization = require('../../core/models/Organization');
+                const Organization = require('../../models/Organization');
                 // Find the Org that actually owns the seeded apps (to avoid duplicate Org issues)
                 const apps = await Application.findOne({ name: 'E-Book' });
                 if (apps) {
@@ -160,7 +160,7 @@ class PaymentController {
 
             // App context: Match Product Category to App Name
             // Refactored to Single App Model as per requirements
-            const Application = require('../../app/models/Application');
+            const Application = require('../../models/Application');
             let app = null;
 
             if (merchantOrgId) {

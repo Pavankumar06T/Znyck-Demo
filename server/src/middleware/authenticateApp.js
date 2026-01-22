@@ -1,4 +1,4 @@
-const Application = require('../modules/app/models/Application');
+const Application = require('../models/Application');
 
 const authenticateApp = async (req, res, next) => {
     try {

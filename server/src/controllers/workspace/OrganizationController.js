@@ -1,5 +1,5 @@
-const Organization = require('../models/Organization');
-const User = require('../models/User');
+const Organization = require('../../models/Organization');
+const User = require('../../models/User');
 
 class OrganizationController {
 

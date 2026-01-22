@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const Organization = require('../models/Organization');
+const User = require('../../models/User');
+const Organization = require('../../models/Organization');
 
 class AuthController {
 
@@ -48,7 +48,7 @@ class AuthController {
 
 
             // 5. Seed Default Products for this Merchant (So they have inventory to sell in Demo)
-            const Product = require('../../payment/models/Product');
+            const Product = require('../../models/Product');
             const defaultProducts = [
                 {
                     name: "The Art of " + (saasType === 'freelance-saas' ? "Freelancing" : "Coding"),

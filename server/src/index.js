@@ -10,21 +10,14 @@ const crypto = require('crypto');
 // Import Config
 const connectDB = require('./config/db');
 
-// Import Controllers
-const AuthController = require('./modules/core/controllers/AuthController');
-const OrganizationController = require('./modules/core/controllers/OrganizationController');
-const ApplicationController = require('./modules/app/controllers/ApplicationController');
-const PaymentController = require('./modules/payment/controllers/PaymentController');
-const ProductController = require('./modules/payment/controllers/ProductController');
-
-// Import Middleware
-const authenticateApp = require('./middleware/authenticateApp');
+// Import Routes
+const routes = require('./routes');
 
 // Import Models for Seeding
-const User = require('./modules/core/models/User');
-const Organization = require('./modules/core/models/Organization');
-const Application = require('./modules/app/models/Application');
-const Product = require('./modules/payment/models/Product');
+const User = require('./models/User');
+const Organization = require('./models/Organization');
+const Application = require('./models/Application');
+const Product = require('./models/Product');
 
 // Initialize App
 const app = express();
@@ -40,53 +33,8 @@ app.use(morgan('dev'));
 // Static serve for uploads (if any)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// --- ROUTES ---
-
-// 1. Management API (For Dashboard)
-const apiRouter = express.Router();
-apiRouter.use((req, res, next) => {
-    console.log(`[API Router] Checking: ${req.method} ${req.path}`);
-    next();
-});
-
-const authenticateUser = require('./middleware/authenticateUser');
-
-// Auth
-apiRouter.post('/auth/signup', AuthController.signup);
-apiRouter.post('/auth/login', AuthController.login);
-apiRouter.get('/auth/me', authenticateUser, AuthController.getMe);
-
-// Organization
-apiRouter.post('/orgs', OrganizationController.createOrg);
-apiRouter.put('/orgs/:id', authenticateUser, OrganizationController.updateOrg);
-apiRouter.get('/orgs', OrganizationController.listOrgs);
-
-// Applications
-apiRouter.post('/apps', ApplicationController.createApp);
-apiRouter.get('/apps', ApplicationController.listApps);
-apiRouter.get('/apps/:id', ApplicationController.getApp);
-
-// Transactions
-apiRouter.get('/transactions', PaymentController.listTransactions);
-
-// Products
-apiRouter.post('/products', ProductController.createProduct);
-apiRouter.get('/products', ProductController.listProducts);
-
-// Demo Payment Route (Public for this demo)
-apiRouter.post('/payments/demo-order', PaymentController.createDemoOrder);
-apiRouter.post('/payments/verify-demo-order', PaymentController.verifyDemoOrder);
-
-app.use('/api/v1', apiRouter);
-
-// 2. Payment API (For Client Apps / SDKs)
-const paymentRouter = express.Router();
-
-paymentRouter.post('/orders', authenticateApp, PaymentController.createOrder);
-paymentRouter.get('/orders/:id', authenticateApp, PaymentController.getOrder);
-
-app.use('/api/v1', paymentRouter);
-
+// Mount API Routes
+app.use('/api/v1', routes);
 
 // Mock Test Route
 app.get('/', (req, res) => {
@@ -95,17 +43,17 @@ app.get('/', (req, res) => {
 
 // Connect to DB and Start Server
 connectDB().then(async () => {
-    // SEEDING LOGIC
+    // SEEDING LOGIC (Kept inline for now, but imports updated)
     try {
         console.log('🌱 Seeding missing Demo Apps...');
 
-        let demoOrg = await Organization.findOne({ name: 'Acme Corp' });
+        let demoOrg = await Organization.findOne({ name: 'Znyck demo' });
         if (!demoOrg) {
             // Create if missing (simplified)
             const user = await User.findOne({});
             if (user) {
                 demoOrg = await Organization.create({
-                    name: 'Acme Corp',
+                    name: 'Znyck demo',
                     owner: user._id,
                     members: [{ user: user._id, role: 'admin' }]
                 });
@@ -175,9 +123,6 @@ connectDB().then(async () => {
 
                 if (existing) {
                     console.log(`✨ App exists: ${app.name} (${app.staticId}) - Preserving ID: ${existing._id}`);
-                    // Optional: Update fields if needed, but critical is keeping _id
-                    // existing.name = app.name;
-                    // existing.save();
                     continue;
                 }
 

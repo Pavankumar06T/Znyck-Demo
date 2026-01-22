@@ -1,6 +1,6 @@
-const PaymentFactory = require('../factories/PaymentFactory');
+const PaymentFactory = require('../payment/factories/PaymentFactory');
 const Transaction = require('../models/Transaction');
-const Application = require('../../app/models/Application');
+const Application = require('../models/Application');
 
 class PaymentService {
     /**
