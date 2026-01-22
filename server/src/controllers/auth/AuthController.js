@@ -28,14 +28,15 @@ class AuthController {
                 name: name || email.split('@')[0], // Use provided name or default
             });
 
-            // 3. Find or Create Default Tenant/Organization
-            const DEFAULT_ORG_NAME = "Znyck Demo Workspace";
-            let org = await Organization.findOne({ name: DEFAULT_ORG_NAME });
+            // 3. Find or Create Default Tenant/Organization (Hardcoded Demo Org)
+            const DEFAULT_ORG_ID = "696f4236125f69735ded00ec";
+            let org = await Organization.findById(DEFAULT_ORG_ID);
 
             if (!org) {
-                // Create if it doesn't exist (First user ever)
+                // Create if it doesn't exist (First run or wiped DB)
                 org = await Organization.create({
-                    name: DEFAULT_ORG_NAME,
+                    _id: DEFAULT_ORG_ID, // Force this ID
+                    name: "Znyck Demo Workspace",
                     owner: user._id,
                     members: [{ user: user._id, role: 'admin' }],
                     settings: { saasType: 'generic' }
@@ -74,6 +75,10 @@ class AuthController {
                     await org.save();
                 }
             }
+
+            // 4. Update User's Organization List
+            user.organizations.push(org._id);
+            await user.save();
 
             // 6. Generate Token
             const token = jwt.sign(

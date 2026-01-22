@@ -55,9 +55,10 @@ export const GlobalProvider = ({ children }) => {
                 }
             } catch (err) {
                 console.error("Global Context Init Failed:", err);
-                // Optionally clear token if 401
-                if (err.response && err.response.status === 401) {
+                // Optionally clear token if 401 (Unauthorized) or 404 (User Not Found - e.g. deleted user/switched DB)
+                if (err.response && (err.response.status === 401 || err.response.status === 404)) {
                     localStorage.removeItem('token');
+                    // Optionally redirect to login, but since this is init, state change to user=null is enough
                 }
             } finally {
                 setLoading(false);
