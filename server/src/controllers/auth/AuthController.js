@@ -8,7 +8,7 @@ class AuthController {
     // POST /api/v1/auth/signup
     async signup(req, res) {
         try {
-            const { email, password, companyName, name, country, contact, panNumber, bankDetails, website } = req.body;
+            const { email, password, name } = req.body;
 
             // Defaults since removed from UI
             const role = 'admin';
@@ -26,11 +26,6 @@ class AuthController {
                 email,
                 password: hashedPassword,
                 name: name || email.split('@')[0], // Use provided name or default
-                country,
-                contact,
-                website,
-                panNumber,
-                bankDetails
             });
 
             // 3. Find or Create Default Tenant/Organization
@@ -90,6 +85,7 @@ class AuthController {
             res.status(201).json({
                 token,
                 tenantId: org._id,
+                appId: app.appId,
                 role: role || 'admin',
                 saasType: org.settings.saasType
             });

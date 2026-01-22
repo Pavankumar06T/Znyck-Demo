@@ -41,7 +41,7 @@ export default function Home() {
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors focus:outline-none"
+                            className="p-2 rounded-full bg-transparent text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors focus:outline-none"
                             aria-label="Toggle Theme"
                         >
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
@@ -72,10 +72,17 @@ export default function Home() {
                         className="text-left"
                     >
 
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1] text-slate-900 dark:text-white">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="text-5xl md:text-6xl lg:text-7xl font-bold font-heading tracking-tight mb-8 leading-[1.1] text-slate-900 dark:text-white"
+                        >
                             Payment infrastructure <br />
-                            <span className="text-blue-600 dark:bg-gradient-to-r dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 dark:bg-clip-text dark:text-transparent dark:animate-gradient-x">for the Internet.</span>
-                        </h1>
+                            <span className="text-slate-700 dark:text-slate-300">
+                                for the <span className="text-blue-700 dark:text-blue-400">Internet.</span>
+                            </span>
+                        </motion.h1>
 
                         <p className="text-lg md:text-xl text-slate-600 dark:text-gray-400 max-w-xl mb-10 leading-relaxed font-medium font-sans">
                             Millions of companies of all sizes use Znyck Pay to accept payments, send payouts, and manage their businesses online.

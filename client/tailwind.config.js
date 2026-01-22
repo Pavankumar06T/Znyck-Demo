@@ -11,6 +11,9 @@ export default {
                 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'gradient-x': 'gradient-x 15s ease infinite',
             },
+            fontFamily: {
+                heading: ['"Playfair Display"', 'serif'],
+            },
             keyframes: {
                 'gradient-x': {
                     '0%, 100%': {
