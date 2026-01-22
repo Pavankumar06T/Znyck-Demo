@@ -38,7 +38,7 @@ export default function Home() {
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors focus:outline-none"
+                            className="p-2 rounded-full bg-transparent text-slate-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors focus:outline-none"
                             aria-label="Toggle Theme"
                         >
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
@@ -83,7 +83,7 @@ export default function Home() {
                                 <span>Start Integration</span>
                                 <ArrowRight size={20} />
                             </Link>
-                            <Link to="/demo" className="px-8 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-full font-bold text-lg hover:bg-slate-50 dark:hover:bg-white/10 transition-all flex items-center justify-center space-x-2 hover:border-slate-300 dark:backdrop-blur-sm">
+                            <Link to="/dashboard" className="px-8 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-full font-bold text-lg hover:bg-slate-50 dark:hover:bg-white/10 transition-all flex items-center justify-center space-x-2 hover:border-slate-300 dark:backdrop-blur-sm">
                                 <PlayCircle size={20} />
                                 <span>View Demo</span>
                             </Link>
