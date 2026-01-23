@@ -65,6 +65,7 @@ export default function OnboardingModal({ isOpen, onClose, onComplete }) {
             setCurrentStep(prev => prev + 1);
         } else {
             // Final Step - Complete
+            localStorage.setItem('onboarding_data', JSON.stringify(formData));
             onComplete();
             onClose();
         }
@@ -109,7 +110,7 @@ export default function OnboardingModal({ isOpen, onClose, onComplete }) {
 
                                         {/* Icon Dot */}
                                         <div className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-slate-50 dark:ring-[#151722] z-10 transition-colors ${isCompleted ? 'bg-green-500 text-white' :
-                                                isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-gray-500'
+                                            isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-gray-500'
                                             }`}>
                                             {isCompleted ? <Check size={14} /> : step.id}
                                         </div>
