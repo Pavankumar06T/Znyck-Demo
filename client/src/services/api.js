@@ -9,23 +9,67 @@ const api = axios.create({
     },
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    const appId = localStorage.getItem('znyck_active_app_id');
-    const env = localStorage.getItem('znyck_env') || 'test';
+/**
+ * Request Interceptor
+ * - Attaches Authorization header ONLY for protected routes
+ * - Injects Znyck context headers (App + Env)
+ */
+api.interceptors.request.use(
+    (config) => {
+        const isAuthRoute =
+            config.url.includes('/auth/login') ||
+            config.url.includes('/auth/signup');
 
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        // Attach JWT only if NOT auth route
+        if (!isAuthRoute) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        }
+
+        // Inject Znyck Context Headers
+        const appId = localStorage.getItem('znyck_active_app_id');
+        const env = localStorage.getItem('znyck_env') || 'test';
+
+        if (appId) {
+            config.headers['X-Znyck-App-Id'] = appId;
+        }
+
+        config.headers['X-Znyck-Env'] = env;
+
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+/**
+ * Response Interceptor (Optional but recommended)
+ * - Auto logout on 401 (except login/signup)
+ */
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error.response?.status;
+        const url = error.config?.url || '';
+
+        const isAuthRoute =
+            url.includes('/auth/login') ||
+            url.includes('/auth/signup');
+
+        if (status === 401 && !isAuthRoute) {
+            console.warn('Unauthorized – clearing session');
+            localStorage.clear();
+            window.location.href = '/login';
+        }
+
+        return Promise.reject(error);
     }
+);
 
-    // Inject Context Headers
-    if (appId) {
-        config.headers['X-Znyck-App-Id'] = appId;
-    }
-    config.headers['X-Znyck-Env'] = env;
-
-    return config;
-});
+/* ===========================
+   API HELPERS
+=========================== */
 
 export const fetchProducts = async (category) => {
     const params = category ? { category } : {};
@@ -39,17 +83,15 @@ export const fetchProductById = async (id) => {
 };
 
 export const createOrder = async (amount, items) => {
-    // Legacy/Unused in this demo flow, keeping for reference or if needed
     const response = await api.post('/orders', { amount, items });
     return response.data;
 };
 
 export const createDemoOrder = async (product, preferredProvider = null) => {
-    // We send productId and the full product details as fallback (in case it's a client-side mock)
     const response = await api.post('/payments/demo-order', {
         productId: product._id,
         productDetails: product,
-        preferredProvider
+        preferredProvider,
     });
     return response.data;
 };
@@ -60,7 +102,8 @@ export const verifyPayment = async (paymentData) => {
 };
 
 export const seedProducts = async () => {
-    return await api.post('/products/seed');
+    const response = await api.post('/products/seed');
+    return response.data;
 };
 
 export const fetchOrgs = async () => {
@@ -69,8 +112,9 @@ export const fetchOrgs = async () => {
 };
 
 export const fetchApps = async (orgId) => {
-    const params = { organizationId: orgId };
-    const response = await api.get('/apps', { params });
+    const response = await api.get('/apps', {
+        params: { organizationId: orgId },
+    });
     return response.data;
 };
 
@@ -85,7 +129,6 @@ export const fetchAppById = async (id) => {
 };
 
 export const fetchTransactions = async () => {
-    console.log('API Service: Fetching transactions from /transactions endpoint');
     const response = await api.get('/transactions');
     return response.data;
 };
