@@ -15,7 +15,7 @@ const SectionCard = ({ title, icon: Icon, children, onEdit }) => (
             {onEdit && (
                 <button
                     onClick={onEdit}
-                    className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                    className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors font-medium bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10"
                 >
                     <Edit2 size={14} />
                     <span>Edit</span>
