@@ -47,10 +47,10 @@ export default function Home() {
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                         </button>
 
-                        <Link to="/login" className="text-sm font-bold text-slate-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white transition-colors hidden sm:block">
+                        <Link to="/early-access" className="text-sm font-bold text-slate-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white transition-colors hidden sm:block">
                             Sign In
                         </Link>
-                        <Link to="/signup" className="group relative px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold overflow-hidden transition-all hover:bg-blue-700 dark:hover:scale-105 dark:shadow-blue-600/40 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 transform hover:-translate-y-0.5">
+                        <Link to="/early-access" className="group relative px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold overflow-hidden transition-all hover:bg-blue-700 dark:hover:scale-105 dark:shadow-blue-600/40 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 transform hover:-translate-y-0.5">
                             <span className="relative z-10 flex items-center space-x-1">
                                 <span>Get Started</span>
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -89,8 +89,8 @@ export default function Home() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
-                            <Link to="/signup" className="px-8 py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-slate-800 dark:hover:bg-blue-500 transition-all flex items-center justify-center space-x-2 shadow-xl shadow-slate-900/20 dark:shadow-blue-600/25 hover:shadow-slate-900/30 hover:-translate-y-1">
-                                <span>Start Integration</span>
+                            <Link to="/early-access" className="px-8 py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-slate-800 dark:hover:bg-blue-500 transition-all flex items-center justify-center space-x-2 shadow-xl shadow-slate-900/20 dark:shadow-blue-600/25 hover:shadow-slate-900/30 hover:-translate-y-1">
+                                <span>Access Znyck Pay</span>
                                 <ArrowRight size={20} />
                             </Link>
                             <Link to="/dashboard" className="px-8 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-full font-bold text-lg hover:bg-slate-50 dark:hover:bg-white/10 transition-all flex items-center justify-center space-x-2 hover:border-slate-300 dark:backdrop-blur-sm">
@@ -270,7 +270,7 @@ export default function Home() {
                             Create an account in minutes and start accepting payments today. No credit card required.
                         </p>
                         <div className="flex items-center justify-center space-x-4">
-                            <Link to="/signup" className="px-8 py-4 bg-white text-blue-600 rounded-full font-bold text-lg hover:bg-blue-50 transition-colors shadow-lg">
+                            <Link to="/early-access" className="px-8 py-4 bg-white text-blue-600 rounded-full font-bold text-lg hover:bg-blue-50 transition-colors shadow-lg">
                                 Create account
                             </Link>
                         </div>

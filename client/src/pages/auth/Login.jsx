@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { User, Lock, ArrowRight, Loader2, AlertCircle, LogIn, Mail } from 'lucide-react';
 import api from '../../services/api';
 import { useGlobal } from '../../context/GlobalContext';
-import { isAuthEnabled } from '../../config/features';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -19,16 +18,8 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        
-        // Check if authentication is disabled via feature flag
-        if (!isAuthEnabled()) {
-            navigate('/waiting');
-            return;
-        }
-
         setLoading(true);
         try {
-            localStorage.clear();
             const response = await api.post('/auth/login', { email, password });
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify({

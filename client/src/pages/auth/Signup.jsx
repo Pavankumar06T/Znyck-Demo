@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { User, Mail, Lock, ArrowRight, Loader2, AlertCircle, Sparkles, Eye, EyeOff } from 'lucide-react';
 import api from '../../services/api';
 import { useGlobal } from '../../context/GlobalContext';
-import { isAuthEnabled } from '../../config/features';
 
 const Signup = () => {
     // Basic Info
@@ -24,12 +23,6 @@ const Signup = () => {
 
     const handleSignup = async (e) => {
         e.preventDefault();
-
-        // Check if authentication is disabled via feature flag
-        if (!isAuthEnabled()) {
-            navigate('/waiting');
-            return;
-        }
 
         if (password !== confirmPassword) {
             alert("Passwords do not match");
