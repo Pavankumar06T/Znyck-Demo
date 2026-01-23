@@ -14,6 +14,7 @@ import ProductList from './pages/platform/ProductList';
 import CategoryStore from './pages/platform/CategoryStore';
 
 import CheckoutDemo from './pages/public/CheckoutDemo';
+import WaitingPage from './pages/public/WaitingPage';
 
 
 // Context
@@ -45,7 +46,8 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-                    
+                    <Route path="/early-access" element={<WaitingPage />} />
+
 
                     {/* NEW: Core Application Routes */}
                     <Route path="/org/:orgId/app/:appId" element={<MainLayout />}>
@@ -57,12 +59,12 @@ function App() {
                         <Route path="settings" element={<AppSettings />} />
                     </Route>
 
-                   
+
                     {/* Organization Root (Apps List) */}
                     <Route path="/org/:orgId/apps" element={<AppsList />} />
 
                     <Route path="/apps/:appId" element={<CheckoutDemo />} />
-                    
+
 
                     {/* Dashboard Routes - No Auth Guard */}
                     <Route path="/dashboard" element={<DashboardLayout />}>
