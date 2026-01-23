@@ -68,9 +68,8 @@ export const useCheckout = () => {
                         };
                         const verifyRes = await verifyPayment(verifyData);
                         if (verifyRes.success || verifyRes.transactionId) {
-                            alert('Payment Successful!');
                             if (optionsOverride.onSuccess) optionsOverride.onSuccess();
-                            window.location.href = '/dashboard';
+                            window.location.href = '/success';
                         }
                     } catch (error) {
                         console.error(error);

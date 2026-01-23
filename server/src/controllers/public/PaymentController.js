@@ -213,7 +213,7 @@ class PaymentController {
 
             await transaction.save();
 
-            res.json({ success: true, transactionId: transaction._id });
+            res.json({ success: true, message: 'Payment Successful', transactionId: transaction._id });
         } catch (error) {
             console.error('Verification Error:', error);
             res.status(500).json({ error: 'Payment verification failed', details: error.message });

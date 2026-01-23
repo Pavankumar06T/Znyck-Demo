@@ -23,49 +23,29 @@ const CategoryStore = () => {
             try {
                 const res = await api.get('/products');
                 // Filter by category (case insensitive matching)
-                const apiProducts = res.data.filter(p => p.category.toLowerCase() === category?.toLowerCase());
+                // Deduplicate items by name to handle potential DB duplicates
+                const uniqueProducts = [];
+                const seen = new Set();
 
-                // Demo Data to ensure we have at least 5 items
-                const demoProducts = [
-                    { _id: 'demo-1', name: 'Starter Kit', description: 'Essential tools for beginners', price: 2900, currency: 'INR', category: 'Product' },
-                    { _id: 'demo-2', name: 'Pro Subscription', description: 'Advanced features for power users', price: 9900, currency: 'INR', category: 'E-Book' },
-                    { _id: 'demo-3', name: 'Consultation', description: 'One-on-one expert advice', price: 15000, currency: 'INR', category: 'Freelance' },
-                    { _id: 'demo-4', name: 'Premium Bundle', description: 'All-in-one package', price: 19900, currency: 'INR', category: 'Product' },
-                    { _id: 'demo-5', name: 'Community Access', description: 'Join our exclusive community', price: 4900, currency: 'INR', category: 'E-Book' },
-                    { _id: 'demo-6', name: 'Masterclass', description: 'Deep dive video course', price: 12500, currency: 'INR', category: 'E-Book' },
-                    { _id: 'demo-7', name: 'UI Kit', description: 'Modern interface assets', price: 7500, currency: 'INR', category: 'Product' },
-                ];
+                // Sort by price ascending to keep the "cheaper" one if duplicates exist, or just first one
+                res.data.sort((a, b) => a.price - b.price);
 
-                // Filter demo products to match the requested category roughly or just show generic ones if needed
-                // For this demo, let's just make sure we have enough.
-                // We will create specific mock items if the API list is short.
+                const categoryProducts = res.data.filter(p => p.category.toLowerCase() === category?.toLowerCase());
 
-                let combined = [...apiProducts];
-                if (combined.length < 5) {
-                    const needed = 5 - combined.length;
-                    // Generate specific mocks for this category to fill the gap
-                    for (let i = 0; i < needed; i++) {
-                        combined.push({
-                            _id: `mock-${category}-${i}`,
-                            name: `${categoryName} Demo Item ${i + 1}`,
-                            description: `This is a sample ${categoryName} item for demonstration.`,
-                            price: (i + 1) * 1500,
-                            currency: 'INR',
-                            category: categoryName
-                        });
+                for (const p of categoryProducts) {
+                    if (!seen.has(p.name)) {
+                        seen.add(p.name);
+                        uniqueProducts.push(p);
                     }
                 }
 
-                setProducts(combined);
+                // Filter out products with price < 50 INR (5000 paise) as they break Stripe (min $0.50)
+                const validPriceProducts = uniqueProducts.filter(p => p.price >= 5000);
+
+                setProducts(validPriceProducts);
             } catch (err) {
                 console.error("Failed to fetch products", err);
-                setProducts([
-                    { _id: 'err-1', name: 'Demo Item 1', description: 'Fallback Item', price: 1000, currency: 'INR' },
-                    { _id: 'err-2', name: 'Demo Item 2', description: 'Fallback Item', price: 2000, currency: 'INR' },
-                    { _id: 'err-3', name: 'Demo Item 3', description: 'Fallback Item', price: 3000, currency: 'INR' },
-                    { _id: 'err-4', name: 'Demo Item 4', description: 'Fallback Item', price: 4000, currency: 'INR' },
-                    { _id: 'err-5', name: 'Demo Item 5', description: 'Fallback Item', price: 5000, currency: 'INR' },
-                ]);
+                setProducts([]);
             } finally {
                 setLoading(false);
             }
@@ -158,7 +138,7 @@ const CategoryStore = () => {
                                 productId: stripeConfig.productId,
                                 user: { email: 'guest@znyck.demo', name: 'Guest User' }
                             });
-                            navigate('/dashboard/transactions');
+                            navigate('/success');
                         } catch (e) {
                             console.error("Verification failed", e);
                             alert("Payment succeeded but verification failed.");

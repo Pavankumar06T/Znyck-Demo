@@ -1,33 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingBag, CreditCard, ShieldCheck, Globe, Code, Loader2, BookOpen, Briefcase, Monitor, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Stripe Imports
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { verifyPayment } from '../../services/api';
 
 // --- PRODUCTS DATA ---
 const PRODUCT_SETS = {
     digital: [
-        { name: "SaaS Blueprint eBook", price: 2900, currency: "USD", icon: <BookOpen /> },
-        { name: "Full Stack Course", price: 9900, currency: "USD", icon: <BookOpen /> },
-        { name: "Dev Bundle (India)", price: 49900, currency: "INR", icon: <BookOpen /> }
+        { _id: "65a1234567890abcdef00001", name: "SaaS Blueprint eBook", price: 2900, currency: "USD", icon: <BookOpen /> },
+        { _id: "65a1234567890abcdef00002", name: "Full Stack Course", price: 9900, currency: "USD", icon: <BookOpen /> },
+        { _id: "65a1234567890abcdef00003", name: "Dev Bundle (India)", price: 49900, currency: "INR", icon: <BookOpen /> }
     ],
     service: [
-        { name: "UI Design Audit", price: 15000, currency: "USD", icon: <Briefcase /> },
-        { name: "Consulting Call", price: 30000, currency: "USD", icon: <Briefcase /> },
-        { name: "Retainer (India)", price: 2500000, currency: "INR", icon: <Briefcase /> }
+        { _id: "65a1234567890abcdef00004", name: "UI Design Audit", price: 15000, currency: "USD", icon: <Briefcase /> },
+        { _id: "65a1234567890abcdef00005", name: "Consulting Call", price: 30000, currency: "USD", icon: <Briefcase /> },
+        { _id: "65a1234567890abcdef00006", name: "Retainer (India)", price: 2500000, currency: "INR", icon: <Briefcase /> }
     ],
     physical: [
-        { name: "Ergo Mouse", price: 8900, currency: "USD", icon: <Monitor /> },
-        { name: "4K Monitor", price: 49900, currency: "USD", icon: <Monitor /> },
-        { name: "Gaming Chair (IN)", price: 1500000, currency: "INR", icon: <Monitor /> }
+        { _id: "65a1234567890abcdef00007", name: "Ergo Mouse", price: 8900, currency: "USD", icon: <Monitor /> },
+        { _id: "65a1234567890abcdef00008", name: "4K Monitor", price: 49900, currency: "USD", icon: <Monitor /> },
+        { _id: "65a1234567890abcdef00009", name: "Gaming Chair (IN)", price: 1500000, currency: "INR", icon: <Monitor /> }
     ]
 };
 
-const MockProduct = ({ price, currency, name, icon, onBuy }) => (
+const MockProduct = ({ _id, price, currency, name, icon, onBuy }) => (
     <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center text-center border border-gray-100 hover:shadow-md transition-all">
         <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 mb-4">
             {icon || <ShoppingBag size={24} />}
@@ -37,7 +38,7 @@ const MockProduct = ({ price, currency, name, icon, onBuy }) => (
             {amountFormatter(price, currency)}
         </p>
         <button
-            onClick={() => onBuy({ price, currency, name })}
+            onClick={() => onBuy({ _id, price, currency, name })}
             className="mt-4 w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
         >
             <CreditCard size={16} />
@@ -89,7 +90,7 @@ const StripeCheckoutForm = ({ onSuccess, onLog }) => {
             setIsProcessing(false);
         } else if (paymentIntent && paymentIntent.status === 'succeeded') {
             onLog(`Stripe Payment Succeeded: ${paymentIntent.id}`, 'success');
-            onSuccess();
+            onSuccess(paymentIntent);
         } else {
             onLog(`Payment Status: ${paymentIntent?.status}`, 'info');
             setIsProcessing(false);
@@ -112,6 +113,7 @@ const StripeCheckoutForm = ({ onSuccess, onLog }) => {
 
 export default function CheckoutDemo() {
     const { appId } = useParams();
+    const navigate = useNavigate();
     const [log, setLog] = useState([]);
     const [loading, setLoading] = useState(false);
     const [appContext, setAppContext] = useState(null);
@@ -121,6 +123,7 @@ export default function CheckoutDemo() {
     const [stripeOptions, setStripeOptions] = useState(null);
     const [stripePromise, setStripePromise] = useState(null);
     const [showStripeModal, setShowStripeModal] = useState(false);
+    const [pendingOrder, setPendingOrder] = useState(null);
 
     // Fetch App Context by ID
     useEffect(() => {
@@ -200,6 +203,7 @@ export default function CheckoutDemo() {
             if (order.provider === 'razorpay') {
                 handleRazorpay(order);
             } else if (order.provider === 'stripe') {
+                setPendingOrder(order);
                 handleStripe(order);
             }
 
@@ -209,6 +213,8 @@ export default function CheckoutDemo() {
             setLoading(false);
         }
     };
+
+
 
     const handleRazorpay = async (order) => {
         addLog('Launching Razorpay Modal...', 'info');
@@ -226,8 +232,23 @@ export default function CheckoutDemo() {
             name: appContext.name,
             description: `Payment for Order ${order.orderId}`,
             order_id: order.razorpay.orderId,
-            handler: function (response) {
-                addLog(`Razorpay Payment Successful: ${response.razorpay_payment_id}`, 'success');
+            handler: async function (response) {
+                try {
+                    const verifyRes = await verifyPayment({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        productId: order.metadata?.productId || null,
+                        user: { email: 'guest@znyck.demo', name: 'Guest User' }
+                    });
+
+                    if (verifyRes.success) {
+                        addLog(`Razorpay Payment Successful: ${response.razorpay_payment_id}`, 'success');
+                        setTimeout(() => navigate('/success'), 500);
+                    }
+                } catch (error) {
+                    addLog(`Verification Failed: ${error.message}`, 'error');
+                }
             },
             prefill: {
                 name: "Demo Customer",
@@ -251,7 +272,6 @@ export default function CheckoutDemo() {
 
         addLog('Initializing Stripe Elements...', 'info');
 
-        // Initialize Stripe with the Key from Backend
         const stripe = await loadStripe(order.key);
         setStripePromise(stripe);
 
@@ -262,6 +282,19 @@ export default function CheckoutDemo() {
 
         setShowStripeModal(true);
     };
+
+    // ... inside StripeCheckoutForm onSuccess prop usage in the JSX ...
+    // We need to update the StripeCheckoutForm component definition above first to accept navigate or handle it there.
+    // Actually, I can pass a handleSuccess callback to StripeCheckoutForm.
+
+    // Let's modify StripeCheckoutForm first in a separate replacement or combined if careful.
+    // It's cleaner to just update the handleStripe and the modal usage.
+
+    // Current Modal Usage:
+    // <StripeCheckoutForm onSuccess={() => { ... setShowStripeModal(false); addLog(...); }} ... />
+
+    // I will update the onSuccess prop in the JSX to navigate.
+
 
     if (initError) {
         return (
@@ -309,9 +342,21 @@ export default function CheckoutDemo() {
 
                             <Elements stripe={stripePromise} options={stripeOptions}>
                                 <StripeCheckoutForm
-                                    onSuccess={() => {
+                                    onSuccess={async (paymentIntent) => {
                                         setShowStripeModal(false);
-                                        addLog("Stripe Payment verified successfully!", 'success');
+                                        try {
+                                            const verifyRes = await verifyPayment({
+                                                paymentIntentId: paymentIntent.id,
+                                                productId: pendingOrder?.metadata?.productId || null,
+                                                user: { email: 'guest@znyck.demo', name: 'Guest User' }
+                                            });
+                                            if (verifyRes.success) {
+                                                addLog("Stripe Payment verified successfully!", 'success');
+                                                setTimeout(() => navigate('/success'), 500);
+                                            }
+                                        } catch (error) {
+                                            addLog(`Stripe Verification Failed: ${error.message}`, 'error');
+                                        }
                                     }}
                                     onLog={addLog}
                                 />

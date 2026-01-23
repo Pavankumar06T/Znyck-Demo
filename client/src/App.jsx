@@ -15,6 +15,7 @@ import CategoryStore from './pages/platform/CategoryStore';
 
 import CheckoutDemo from './pages/public/CheckoutDemo';
 import WaitingPage from './pages/public/WaitingPage';
+import PaymentSuccess from './pages/public/PaymentSuccess';
 
 
 // Context
@@ -47,6 +48,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/early-access" element={<WaitingPage />} />
+                    <Route path="/success" element={<PaymentSuccess />} />
 
 
                     {/* NEW: Core Application Routes */}
