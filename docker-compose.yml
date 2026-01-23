@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    # Environment variables from file will be used.
+    # explicit overrides can be added here if needed.
+
+  client:
+    build:
+      context: ./client
+      args:
+        - VITE_API_URL=/api/v1
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
