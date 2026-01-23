@@ -13,11 +13,13 @@ export default function MainLayout() {
     const location = useLocation();
 
     // Global State
+    // Global State
     const {
         user,
         orgs, activeOrg, setActiveOrg,
         apps, activeApp, setActiveApp,
-        env, setEnv
+        env, setEnv,
+        logout
     } = useGlobal();
 
     const [isAppOpen, setIsAppOpen] = useState(false);
@@ -60,6 +62,12 @@ export default function MainLayout() {
         setActiveApp(app);
         setIsAppOpen(false);
         navigate(`/org/${activeOrg._id}/app/${app.appId}/dashboard`);
+    };
+
+    // Auth Logout
+    const handleLogout = () => {
+        logout();
+        navigate('/');
     };
 
     const navItems = [
@@ -113,7 +121,7 @@ export default function MainLayout() {
                             <p className="text-xs text-slate-500 dark:text-gray-500 truncate">{user?.email}</p>
                         </div>
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={handleLogout}
                             className="text-slate-400 dark:text-gray-500 hover:text-slate-900 dark:hover:text-white"
                         >
                             <LogOut size={16} />

@@ -128,6 +128,70 @@ export const GlobalProvider = ({ children }) => {
     }, [env, activeApp, activeOrg]);
 
 
+    // 6. Login Action
+    const login = async (token, userData, redirectPath = null) => {
+        localStorage.setItem('token', token);
+        // Persist minimal user data for rehydration before fetch
+        localStorage.setItem('user', JSON.stringify({
+            tenantId: userData.tenantId,
+            role: userData.role,
+            plan: userData.plan
+        }));
+
+        // Trigger a re-fetch or internal state update
+        // Use the existing init logic or manual set
+        // For speed, let's manually set what we have and let the effect fetch the rest
+        // Actually, easiest is to just reload the page or trigger the init effect?
+        // But we want SPA feel.
+        // Let's call the init implementation manually or Extract init.
+
+        // Better: Set loading true, and re-run init logic?
+        // Or just implementing a hard reset helper.
+
+        // Let's implement a clean init flow.
+        setLoading(true);
+        try {
+            const res = await api.get('/auth/me'); // This will use the new token
+            const data = res.data;
+            if (data.user) {
+                setUser(data.user);
+                if (data.organization) {
+                    setOrgs([data.organization]);
+                    setActiveOrg(data.organization);
+
+                    // Fetch apps
+                    const appsRes = await api.get(`/apps?organizationId=${data.organization._id}`);
+                    const appsData = appsRes.data;
+                    const fetchedApps = appsData.apps || appsData;
+                    setApps(Array.isArray(fetchedApps) ? fetchedApps : []);
+                }
+            }
+        } catch (err) {
+            console.error("Login Init Failed", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 7. Logout Action
+    const logout = () => {
+        // Clear Storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('znyck_active_app_id');
+        localStorage.removeItem('znyck_active_org_id');
+        // We keep 'znyck_env', 'theme' as they are device preferences
+
+        // Reset State
+        setUser(null);
+        setOrgs([]);
+        setActiveOrg(null);
+        setApps([]);
+        setActiveApp(null);
+
+        // Optional: Reset api header if needed, but api.js usually reads from localStorage on request
+    };
+
     return (
         <GlobalContext.Provider value={{
             user, setUser,
@@ -136,7 +200,8 @@ export const GlobalProvider = ({ children }) => {
             apps, setApps,
             activeApp, setActiveApp,
             env, setEnv,
-            loading
+            loading,
+            login, logout
         }}>
             {children}
         </GlobalContext.Provider>

@@ -16,17 +16,23 @@ const Login = () => {
     const query = new URLSearchParams(window.location.search);
     const redirectPath = query.get('redirect');
 
+    const { login } = useGlobal();
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
             const response = await api.post('/auth/login', { email, password });
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify({
-                tenantId: response.data.tenantId,
-                role: response.data.role,
-                plan: response.data.plan
-            }));
+
+            // Use GlobalContext login method
+            await login(
+                response.data.token,
+                {
+                    tenantId: response.data.tenantId,
+                    role: response.data.role,
+                    plan: response.data.plan
+                }
+            );
 
             if (redirectPath) {
                 navigate(redirectPath);
