@@ -150,7 +150,14 @@ connectDB().then(async () => {
         }
 
         app.listen(PORT, () => {
-            console.log(`🚀 Znyck Pay Server running on port ${PORT}`);
+            console.log(`
+----------------------------------------------------------------
+🚀 Znyck Pay is running!
+----------------------------------------------------------------
+🏠 Client:   http://localhost:8080
+⚙️  Server:   http://localhost:5000
+----------------------------------------------------------------
+            `);
         });
 
     } catch (e) {
